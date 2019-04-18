@@ -10,6 +10,7 @@ from urllib.error import URLError, HTTPError
 fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
 cards = loadJson(fftcgURL)
 installdir = '/home/btawa/fftcg_parser/'
+MAX_QUERY = 35
 
 # Used to pass token as a variable when launching bot
 # Allows to not post sensitive data to github
@@ -71,7 +72,7 @@ async def tiny(ctx, name: str):
         await ctx.channel.send('```No Match```')
     else:
         # print(len(mycard))
-        if len(mycard) >= 25:
+        if len(mycard) >= MAX_QUERY:
             output = 'Too many cards please be more specific'
         else:
             for x in mycard:
@@ -102,7 +103,7 @@ async def name(ctx, name: str):
         await ctx.channel.send('```No Match```')
     else:
         # print(len(mycard))
-        if len(mycard) >= 25:
+        if len(mycard) >= MAX_QUERY:
             await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
         elif len(mycard) == 1:
             await ctx.channel.send('```' + str(prettyCard(mycard[0])) + '```')
@@ -146,7 +147,7 @@ async def image(ctx, code: str):
     if mycard == '':
         await ctx.channel.send('```No Match```')
     else:
-        if re.match('^[0-9]+\-[0-9]{3}[a-zA-Z]\/[0-9]+\-[0-9]{3}[a-zA-Z]$', mycard[u'Code']):
+        if re.match('^[0-9]+\-[0-9]{3}[a-zA-Z]\o/[0-9]+\-[0-9]{3}[a-zA-Z]$', mycard[u'Code']):
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'][-6:] + '_eg.jpg'
         else:
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'] + '_eg.jpg'
