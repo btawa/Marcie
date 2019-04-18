@@ -44,9 +44,9 @@ async def code(ctx, code: str):
         mycard = ''
 
     if mycard == '':
-        await ctx.send('```No Match```')
+        await ctx.channel.send('```No Match```')
     else:
-        await ctx.send('```' + prettyCard(mycard) + '```')
+        await ctx.channel.send('```' + prettyCard(mycard) + '```')
 
 
 @bot.command()
@@ -68,7 +68,7 @@ async def tiny(ctx, name: str):
     output = ''
 
     if mycard == []:
-        await ctx.send('```No Match```')
+        await ctx.channel.send('```No Match```')
     else:
         # print(len(mycard))
         if len(mycard) >= 25:
@@ -79,9 +79,9 @@ async def tiny(ctx, name: str):
                 output = output + prettyCode(x) + "\n"
 
         if len(output) >= 2000:
-            await ctx.send('```Too many characters for discord, please be more specific````')
+            await ctx.channel.send('```Too many characters for discord, please be more specific````')
         else:
-            await ctx.send('```' + output + '```')
+            await ctx.channel.send('```' + output + '```')
         # print(len(output))
 
 
@@ -99,22 +99,22 @@ async def name(ctx, name: str):
     output = ''
 
     if mycard == []:
-        await ctx.send('```No Match```')
+        await ctx.channel.send('```No Match```')
     else:
         # print(len(mycard))
         if len(mycard) >= 25:
-            await ctx.send('```' + 'Too many cards please be more specific' + '```')
+            await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
         elif len(mycard) == 1:
-            await ctx.send('```' + str(prettyCard(mycard[0])) + '```')
+            await ctx.channel.send('```' + str(prettyCard(mycard[0])) + '```')
         else:
             for x in mycard:
                 # print(prettyCard(x))
                 output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
 
             if len(output) >= 2000:
-                await ctx.send('```Too many characters for discord, please be more specific````')
+                await ctx.channel.send('```Too many characters for discord, please be more specific````')
             else:
-                mymessage = await ctx.send(
+                mymessage = await ctx.channel.send(
                     '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
 
                 # This is what we use to check to see if our input is within
@@ -144,7 +144,7 @@ async def image(ctx, code: str):
     mycard = grab_card(code.upper(), cards)
 
     if mycard == '':
-        await ctx.send('```No Match```')
+        await ctx.channel.send('```No Match```')
     else:
         if re.match('^[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]$', mycard[u'Code']):
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'][-6:] + '_eg.jpg'
