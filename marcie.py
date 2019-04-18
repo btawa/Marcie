@@ -114,7 +114,7 @@ async def name(ctx, name: str):
             if len(output) >= 2000:
                 await ctx.send('```Too many characters for discord, please be more specific````')
             else:
-                await ctx.send(
+                mymessage = await ctx.send(
                     '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
 
                 # This is what we use to check to see if our input is within
@@ -135,7 +135,7 @@ async def name(ctx, name: str):
                     return
 
                 else:
-                    await ctx.send('```' + str(prettyCard(mycard[int(message.content) - 1])) + '```')
+                    await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) + '```')
 
 
 @bot.command()
