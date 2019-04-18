@@ -169,6 +169,7 @@ def prettyCard(card):
     finished_string = finished_string.replace(u"\u300a"u"\u0039"u"\u300b", '(9)')
     finished_string = finished_string.replace(u"\u300a"u"\u0030"u"\u300b", '(0)')
     finished_string = finished_string.replace(u"\u300a" + "X" + u"\u300b", '(X)')
+    finished_string = finished_string.replace(u"\u4E00"u"\u822C" , '(Generic)')
 
     # Special Switch
     finished_string = finished_string.replace(u"\u300a"u"\u0053"u"\u300b", '[Special]')
