@@ -1,5 +1,5 @@
 # Marcie Bot
-Marcie is a discord designed to provide discord users with FFTCG cards in their discord chats.
+Marcie is a discord bot designed to provide discord access to query for cards in chat.
 
 ## Dependencies
 - Rapptz/discord.py
