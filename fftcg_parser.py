@@ -204,10 +204,10 @@ def loadJson(path):
 
 
 # This is the url from square which has the JSON object that we use
-url = 'https://fftcg.square-enix-games.com/getcards'
+#url = 'https://fftcg.square-enix-games.com/getcards'
 
 # Load JSON
-cards = loadJson(url)
+#cards = loadJson(url)
 
 # The following code is used for testing if this specific module is being executed directly and not from marcie.
 
