@@ -151,8 +151,12 @@ async def image(ctx, code: str):
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'][-6:] + '_eg.jpg'
         else:
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'] + '_eg.jpg'
-        urllib.request.urlretrieve(URL, os.getcwd() + '\\\\card.jpg')
+        if 'linux' in sys.platform:
+            urllib.request.urlretrieve(URL, os.getcwd() + '/card.jpg')
+            await ctx.channel.send(file=discord.File(os.getcwd() + '/card.jpg'))
+        elif 'win' in sys.platform:
+            urllib.request.urlretrieve(URL, os.getcwd() + '\\\\card.jpg')
+            await ctx.channel.send(file=discord.File(os.getcwd() + '\\\\card.jpg'))
         urllib.request.urlcleanup()
-        await ctx.channel.send(file=discord.File(os.getcwd() + '\\\\card.jpg' ))
 
 bot.run(mytoken)
