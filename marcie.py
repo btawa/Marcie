@@ -2,7 +2,6 @@ import discord
 import os
 import re
 from discord.ext import commands
-import random
 from fftcg_parser import *
 import io
 from urllib.error import URLError, HTTPError
@@ -151,12 +150,13 @@ async def image(ctx, code: str):
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'][-6:] + '_eg.jpg'
         else:
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'] + '_eg.jpg'
-        if 'linux' in sys.platform:
-            urllib.request.urlretrieve(URL, os.getcwd() + '/card.jpg')
-            await ctx.channel.send(file=discord.File(os.getcwd() + '/card.jpg'))
+        if 'linux' or 'darwin' in sys.platform:
+            urllib.request.urlretrieve(URL, os.path.dirname(__file__) + '/card.jpg')
+            await ctx.channel.send(file=discord.File(os.path.dirname(__file__) + '/card.jpg'))
         elif 'win' in sys.platform:
-            urllib.request.urlretrieve(URL, os.getcwd() + '\\\\card.jpg')
-            await ctx.channel.send(file=discord.File(os.getcwd() + '\\\\card.jpg'))
+            urllib.request.urlretrieve(URL, os.path.dirname(__file__) + '\\\\card.jpg')
+            await ctx.channel.send(file=discord.File(os.path.dirname(__file__) + '\\\\card.jpg'))
         urllib.request.urlcleanup()
+
 
 bot.run(mytoken)
