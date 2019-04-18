@@ -135,7 +135,7 @@ async def name(ctx, name: str):
                     return
 
                 else:
-                    await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) + '```')
+                    await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) + "\n\nYour Choice: " + message.content + '```')
 
 
 @bot.command()
