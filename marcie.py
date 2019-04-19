@@ -99,7 +99,7 @@ async def name(ctx, name: str):
 
     output = ''
 
-    if mycard == []:
+    if not mycard:
         await ctx.channel.send('```No Match```')
     else:
         # print(len(mycard))
@@ -123,7 +123,7 @@ async def name(ctx, name: str):
                 def check(msg):
                     # print('check ran')
                     if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
-                        if int(msg.content) <= len(mycard) and int(msg.content) >= 1:
+                        if len(mycard) >= int(msg.content) >= 1:
                             # print(len(mycard))
                             return True
                     else:
