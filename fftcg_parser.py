@@ -73,6 +73,8 @@ def prettyCode(card):
         element = "Dark"
     elif card[u'Element'] == u"\u96f7":
         element = "Lightning"
+    else:
+        element = ''
 
     line1 = card[u'Code'] + ' - ' + element + " " + card[u'Cost'] + " - " + card[u'Name_EN'] + " - " + card[
         u'Type_EN'] + " " + multicard
@@ -103,6 +105,8 @@ def prettyCard(card):
         element = "Dark"
     elif card[u'Element'] == u"\u96f7":
         element = "Lightning"
+    else:
+        element = ''
 
     if card[u'Multicard'] == u"\u25cb":
         multicard = '(Multi)'
@@ -205,10 +209,10 @@ def loadJson(path):
 
 
 # This is the url from square which has the JSON object that we use
-#url = 'https://fftcg.square-enix-games.com/getcards'
+# url = 'https://fftcg.square-enix-games.com/getcards'
 
 # Load JSON
-#cards = loadJson(url)
+# cards = loadJson(url)
 
 # The following code is used for testing if this specific module is being executed directly and not from marcie.
 
