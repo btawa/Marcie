@@ -136,7 +136,8 @@ async def name(ctx, name: str):
                     return
 
                 else:
-                    await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) + "\n\nYour Choice: " + message.content + '```')
+                    await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) +
+                                                 "\n\nYour Choice: " + message.content + '```')
 
 
 @bot.command()
@@ -147,7 +148,7 @@ async def image(ctx, code: str):
     if mycard == '':
         await ctx.channel.send('```No Match```')
     else:
-        if re.match('^[0-9]+\-[0-9]{3}[a-zA-Z]\o/[0-9]+\-[0-9]{3}[a-zA-Z]$', mycard[u'Code']):
+        if re.match('^[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]$', mycard[u'Code']):
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'][-6:] + '_eg.jpg'
         else:
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'] + '_eg.jpg'
