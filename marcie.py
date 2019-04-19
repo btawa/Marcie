@@ -85,7 +85,7 @@ async def tiny(ctx, name: str):
             await ctx.channel.send('```' + output + '```')
         # print(len(output))
 
-
+@commands.cooldown(3, 10, type=commands.BucketType.user)
 @bot.command()
 async def name(ctx, name: str):
     """BETA : This request takes in a card name and then asks which card you\n would like in name format"""
