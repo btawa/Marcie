@@ -90,6 +90,8 @@ async def tiny(ctx, name: str):
 async def name(ctx, name: str):
     """BETA : This request takes in a card name and then asks which card you\n would like in name format"""
 
+    channel = ctx.channel
+
     # Input validation to prevent re exceptions
     # Don't let {} , +, or * be only variable
     if name == "+" or name == "*" or re.match('^\{\d+\}$', name):
@@ -122,7 +124,7 @@ async def name(ctx, name: str):
                 # the range of our card index
                 def check(msg):
                     # print('check ran')
-                    if re.match('^\d+$', str(msg.content)):
+                    if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
                         if int(msg.content) <= len(mycard) and int(msg.content) >= 1:
                             # print(len(mycard))
                             return True
