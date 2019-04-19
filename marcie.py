@@ -153,11 +153,13 @@ async def image(ctx, code: str):
         else:
             URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + mycard[u'Code'] + '_eg.jpg'
         if 'linux' or 'darwin' in sys.platform:
-            urllib.request.urlretrieve(URL, os.path.dirname(__file__) + '/card.jpg')
-            await ctx.channel.send(file=discord.File(os.path.dirname(__file__) + '/card.jpg'))
+            card_img = urllib.request.urlopen(URL)
+            data = io.BytesIO(card_img.read())
+            await ctx.channel.send(file=discord.File(data, 'card.jpg'))
         elif 'win' in sys.platform:
-            urllib.request.urlretrieve(URL, os.path.dirname(__file__) + '\\\\card.jpg')
-            await ctx.channel.send(file=discord.File(os.path.dirname(__file__) + '\\\\card.jpg'))
+            card_img = urllib.request.urlopen(URL)
+            data = io.BytesIO(card_img.read())
+            await ctx.channel.send(file=discord.File(data, 'card.jpg'))
         urllib.request.urlcleanup()
 
 
