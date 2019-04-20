@@ -92,7 +92,7 @@ async def name(ctx, name: str):
 
     # Input validation to prevent re exceptions
     # Don't let {} , +, or * be only variable
-    if name == "+" or name == "*" or re.match('^\{\d+\}$', name):
+    if name == "+" or name == "*" or re.match('^\{\d*\}$', name):
         mycard = []
     else:
         mycard = grab_cards(name.lower(), cards)
