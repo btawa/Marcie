@@ -114,7 +114,7 @@ def prettyCard(card):
         multicard = ''
 
     #  Prepping different lines for return
-    line1 = card[u'Name_EN'] + " " + element + " " + card[u'Cost'] + " " + "(" + card[u'Code'] + ") " + multicard
+    line1 = card[u'Name_EN'] + " - " + element + " " + card[u'Cost'] + " - " + "(" + card[u'Code'] + ") " + multicard
     line2 = card[u'Type_EN'] + " " + card[u'Job_EN'] + " " + card[u'Category_1']  # + " " + card[u'Category_2']
     line3 = card[u'Text_EN']
     line4 = card[u'Power']
