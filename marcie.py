@@ -143,7 +143,7 @@ async def name(ctx, name: str):
 @name.error
 async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.channel.send('```Command is on cooldown for ' + str(ctx.author)[:-5] + '```')
+        await ctx.channel.send('```Command is on cooldown for ' + ctx.author.display_name + '```')
 
 
 @bot.command()
