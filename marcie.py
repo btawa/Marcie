@@ -61,7 +61,7 @@ async def tiny(ctx, name: str):
         mycard = []
     elif name == "*":
         mycard = []
-    elif re.match('^\{\d+\}$', name):
+    elif re.match('^\{\d*\}$', name):
         mycard = []
     else:
         mycard = grab_cards(name.lower(), cards)
