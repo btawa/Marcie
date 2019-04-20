@@ -38,10 +38,16 @@ def grab_card(req, cards):
 def grab_cards(req, cards):
     our_cards = []
 
-    for x in cards:
-        if re.search(req.lower(), x[u'Name_EN'].lower()):
-            our_cards.append(x)
-    return our_cards
+    try:
+        req = re.compile(req)
+    except:
+        return our_cards
+    else:
+
+        for x in cards:
+            if re.search(req, x[u'Name_EN'].lower()):
+                our_cards.append(x)
+        return our_cards
 
 
 # This reads in a card likely from grab_card or grab_cards and

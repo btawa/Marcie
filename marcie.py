@@ -55,16 +55,7 @@ async def tiny(ctx, name: str):
     """Pass a card name without code to get card.\n
     If card has spaces put card name in quotes."""
 
-    # Input validation to prevent re exceptions
-    # Don't let {} , +, or * be only variable
-    if name == "+":
-        mycard = []
-    elif name == "*":
-        mycard = []
-    elif re.match('^\{\d*\}$', name):
-        mycard = []
-    else:
-        mycard = grab_cards(name.lower(), cards)
+    mycard = grab_cards(name.lower(), cards)
 
     output = ''
 
@@ -90,12 +81,8 @@ async def tiny(ctx, name: str):
 async def name(ctx, name: str):
     """BETA : This request takes in a card name and then asks which card you\n would like in name format"""
 
-    # Input validation to prevent re exceptions
-    # Don't let {} , +, or * be only variable
-    if name == "+" or name == "*" or re.match('^\{\d*\}$', name):
-        mycard = []
-    else:
-        mycard = grab_cards(name.lower(), cards)
+
+    mycard = grab_cards(name.lower(), cards)
 
     output = ''
 
