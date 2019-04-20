@@ -29,7 +29,7 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
-
+@commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def code(ctx, code: str):
     """Pass an FFTCG Card Code to get output"""
@@ -49,7 +49,7 @@ async def code(ctx, code: str):
     else:
         await ctx.channel.send('```' + prettyCard(mycard) + '```')
 
-
+@commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def tiny(ctx, name: str):
     """Pass a card name without code to get card.\n
@@ -140,12 +140,7 @@ async def name(ctx, name: str):
                                                  "\n\nYour Choice: " + message.content + '```')
 
 
-@name.error
-async def cooldown_error(ctx, error):
-    if isinstance(error, commands.CommandOnCooldown):
-        await ctx.channel.send('```Command is on cooldown for ' + ctx.author.display_name + '```')
-
-
+@commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def image(ctx, code: str):
     """Pass a card code to get an image of the card"""
@@ -163,6 +158,15 @@ async def image(ctx, code: str):
         data = io.BytesIO(card_img.read())
         await ctx.channel.send(file=discord.File(data, 'card.jpg'))
         urllib.request.urlcleanup()
+
+
+@name.error
+@image.error
+@code.error
+@tiny.error
+async def cooldown_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.channel.send('```Command is on cooldown for ' + ctx.author.display_name + '```')
 
 
 bot.run(mytoken)
