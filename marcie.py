@@ -17,7 +17,7 @@ MAX_QUERY = 35
 # python3 <marcie.py> 'token'
 mytoken = sys.argv[1]
 
-description = '''Tawa's inefficient FFTCG bot
+description = '''Marcie FFTCG Bot
 '''
 
 bot = commands.Bot(command_prefix='?', description=description)
@@ -52,8 +52,7 @@ async def code(ctx, code: str):
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def tiny(ctx, name: str):
-    """Pass a card name without code to get card.\n
-    If card has spaces put card name in quotes."""
+    """Pass a card name without code to get card.  For spaces use quotes."""
 
     mycard = grab_cards(name.lower(), cards)
 
@@ -79,8 +78,7 @@ async def tiny(ctx, name: str):
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def name(ctx, name: str):
-    """BETA : This request takes in a card name and then asks which card you\n would like in name format"""
-
+    """This request takes in a card name and then asks which card you would like in name format"""
 
     mycard = grab_cards(name.lower(), cards)
 
@@ -131,6 +129,7 @@ async def name(ctx, name: str):
 @bot.command()
 async def image(ctx, code: str):
     """Pass a card code to get an image of the card"""
+
     mycard = grab_card(code.upper(), cards)
 
     if mycard == '':
