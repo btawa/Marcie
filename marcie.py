@@ -4,7 +4,7 @@ import re
 from discord.ext import commands
 from fftcg_parser import *
 import io
-from urllib.error import URLError, HTTPError
+
 
 # For FFTCG Parser Commands
 fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
