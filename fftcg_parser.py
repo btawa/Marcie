@@ -212,26 +212,3 @@ def loadJson(path):
     cards_list = data['cards']
 
     return cards_list
-
-
-# This is the url from square which has the JSON object that we use
-# url = 'https://fftcg.square-enix-games.com/getcards'
-
-# Load JSON
-# cards = loadJson(url)
-
-# The following code is used for testing if this specific module is being executed directly and not from marcie.
-
-# Establish what our request card will be for testing from CLI passed argument
-# req = sys.argv[1]
-
-# req2 = grab_cards(req, cards)
-
-# for x in req2:
-#  print(prettyCode(x))
-
-# Print our card to CLI
-# print(grab_cards( req , cards))
-
-# print(data)
-# print(data)
