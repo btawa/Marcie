@@ -1,5 +1,4 @@
 import discord
-import os
 import re
 from discord.ext import commands
 from fftcg_parser import *
