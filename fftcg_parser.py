@@ -1,10 +1,7 @@
 import json
 import re
 from html.parser import HTMLParser
-import sys
 import urllib.request
-from urllib.error import URLError, HTTPError
-
 
 # Helpful jq
 #
