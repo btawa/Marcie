@@ -1,8 +1,9 @@
 import discord
-import re
 from discord.ext import commands
 from fftcg_parser import *
 import io
+import sys
+import re
 
 
 # For FFTCG Parser Commands
