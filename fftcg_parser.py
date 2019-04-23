@@ -2,6 +2,7 @@ import json
 import re
 from html.parser import HTMLParser
 import urllib.request
+import io
 
 # Helpful jq
 #
@@ -196,6 +197,24 @@ def prettyCard(card):
     finished_string = myparser.unescape(finished_string)
 
     return finished_string
+
+def getImage(code):
+    """Pass a code"""
+
+    if re.search('[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code[-6:] + '_eg.jpg'
+    else:
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code + '_eg.jpg'
+
+    try:
+        card_img = urllib.request.urlopen(URL)
+    except:
+        return
+    else:
+        data = io.BytesIO(card_img.read())
+        return data
+    finally:
+        urllib.request.urlcleanup()
 
 
 # Loading JSON from file and load it into a variable
