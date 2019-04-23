@@ -130,7 +130,15 @@ async def name(ctx, name: str):
 async def image(ctx, code: str):
     """Pass a card code to get an image of the card"""
 
-    mycard = grab_card(code.upper(), cards)
+    # Input validation to ensure code is 1-234A or 1-234
+    if re.match('^[0-9]+\-[0-9]{3}[a-zA-Z]$', code):
+        mycard = grab_card(code.upper(), cards)
+    elif re.match('^[0-9]+\-[0-9]{3}$', code):
+        mycard = grab_card(code.upper(), cards)
+    elif re.match('^[Pp][Rr]\-\d{3}$', code):
+        mycard = grab_card(code.upper(), cards)
+    else:
+        mycard = ''
 
     if mycard == '':
         await ctx.channel.send('```No Match```')
@@ -195,8 +203,10 @@ async def debug(ctx, name:str):
                     return
 
                 else:
-                    await mymessage.delete()
-                    await ctx.channel.send(file=discord.File(getImage(mycard[int(message.content) - 1][u'Code']) , 'card.jpg'))
+                    await mymessage.edit(content='```You chose: ' +
+                                                 prettyCode(mycard[int(message.content) - 1 ]) + '```')
+                    await ctx.channel.send(file=discord.File(getImage(mycard[int(message.content) - 1][u'Code'])
+                                                             , 'card.jpg'))
 
 
 @debug.error

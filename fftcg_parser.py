@@ -85,8 +85,8 @@ def prettyCode(card):
     else:
         element = ''
 
-    line1 = card[u'Code'] + ' - ' + element + " " + card[u'Cost'] + " - " + card[u'Name_EN'] + " - " + card[
-        u'Type_EN'] + " " + multicard
+    line1 = card[u'Code'] + ' - ' + card[u'Name_EN'] + ' - ' + element + " " + card[u'Cost'] + " - " + \
+            card[u'Type_EN'] + " " + multicard
 
     return line1
 
