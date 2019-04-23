@@ -22,10 +22,15 @@ import io
 def grab_card(req, cards):
     our_card = ''
 
-    for x in cards:
-        if re.search(req, x[u'Code'].upper()):
-            our_card = x
-    return our_card
+    try:
+        req = re.compile(req)
+    except:
+        return our_card
+    else:
+        for x in cards:
+            if re.search(req, x[u'Code'].upper()):
+                our_card = x
+        return our_card
 
 
 # This function reads in a request, and a cards dictionary.
