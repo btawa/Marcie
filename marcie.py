@@ -9,7 +9,6 @@ import re
 # For FFTCG Parser Commands
 fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
 cards = loadJson(fftcgURL)
-installdir = '/home/btawa/fftcg_parser/'
 MAX_QUERY = 35
 
 # Used to pass token as a variable when launching bot
