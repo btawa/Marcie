@@ -153,6 +153,7 @@ async def image(ctx, code: str):
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def debug(ctx, name:str):
+    """BETA: Send a card name with user input.  Returns a the image of the card selected"""
     mycard = grab_cards(name.lower(), cards)
 
     output = ''
