@@ -150,7 +150,55 @@ async def image(ctx, code: str):
         finally:
             urllib.request.urlcleanup()
 
+@commands.cooldown(2, 10, type=commands.BucketType.user)
+@bot.command()
+async def debug(ctx, name:str):
+    mycard = grab_cards(name.lower(), cards)
 
+    output = ''
+
+    if not mycard:
+        await ctx.channel.send('```No Match```')
+    else:
+        # print(len(mycard))
+        if len(mycard) >= MAX_QUERY:
+            await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
+        elif len(mycard) == 1:
+            await ctx.channel.send(file=discord.File(getImage(mycard[0][u'Code']), 'card.jpg'))
+        else:
+            for x in mycard:
+                # print(prettyCard(x))
+                output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
+
+            if len(output) >= 2000:
+                await ctx.channel.send('```Too many characters for discord, please be more specific````')
+            else:
+                mymessage = await ctx.channel.send(
+                    '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
+
+                # This is what we use to check to see if our input is within
+                # the range of our card index
+                def check(msg):
+                    # print('check ran')
+                    if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
+                        if len(mycard) >= int(msg.content) >= 1:
+                            # print(len(mycard))
+                            return True
+                    else:
+                        return False
+
+                try:
+                    message = await bot.wait_for('message', check=check, timeout=10)
+
+                except:
+                    return
+
+                else:
+                    await mymessage.delete()
+                    await ctx.channel.send(file=discord.File(getImage(mycard[int(message.content) - 1][u'Code']) , 'card.jpg'))
+
+
+@debug.error
 @name.error
 @image.error
 @code.error
