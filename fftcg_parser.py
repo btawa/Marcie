@@ -203,9 +203,13 @@ def prettyCard(card):
 # card_list - list of cards
 
 def loadJson(path):
-    data = urllib.request.urlopen(path)
-    content = data.read().decode('utf-8')
-    data = json.loads(content)
-    cards_list = data['cards']
+    try:
+        data = urllib.request.urlopen(path)
+    except:
+        return
+    else:
+        content = data.read().decode('utf-8')
+        data = json.loads(content)
+        cards_list = data['cards']
 
-    return cards_list
+        return cards_list
