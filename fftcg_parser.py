@@ -2,6 +2,7 @@ import json
 import re
 from html.parser import HTMLParser
 import urllib.request
+import io
 
 # Helpful jq
 #
@@ -21,10 +22,15 @@ import urllib.request
 def grab_card(req, cards):
     our_card = ''
 
-    for x in cards:
-        if re.search(req, x[u'Code'].upper()):
-            our_card = x
-    return our_card
+    try:
+        req = re.compile(req)
+    except:
+        return our_card
+    else:
+        for x in cards:
+            if re.search(req, x[u'Code'].upper()):
+                our_card = x
+        return our_card
 
 
 # This function reads in a request, and a cards dictionary.
@@ -79,8 +85,8 @@ def prettyCode(card):
     else:
         element = ''
 
-    line1 = card[u'Code'] + ' - ' + element + " " + card[u'Cost'] + " - " + card[u'Name_EN'] + " - " + card[
-        u'Type_EN'] + " " + multicard
+    line1 = card[u'Code'] + ' - ' + card[u'Name_EN'] + ' - ' + element + " " + card[u'Cost'] + " - " + \
+            card[u'Type_EN'] + " " + multicard
 
     return line1
 
@@ -196,6 +202,24 @@ def prettyCard(card):
     finished_string = myparser.unescape(finished_string)
 
     return finished_string
+
+def getImage(code):
+    """This function takes in a code as a string and returns and image that can be sent to a discord channel"""
+
+    if re.search('[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code[-6:] + '_eg.jpg'
+    else:
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code + '_eg.jpg'
+
+    try:
+        card_img = urllib.request.urlopen(URL)
+    except:
+        return
+    else:
+        data = io.BytesIO(card_img.read())
+        return data
+    finally:
+        urllib.request.urlcleanup()
 
 
 # Loading JSON from file and load it into a variable
