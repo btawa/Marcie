@@ -48,7 +48,7 @@ async def on_ready():
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def tiny(ctx, name: str):
-    """Pass a card name without code to get card.  For spaces use quotes."""
+    """List cards that match the search."""
 
     mycard = grab_cards(name.lower(), cards)
 
@@ -74,7 +74,7 @@ async def tiny(ctx, name: str):
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def name(ctx, name: str):
-    """This request takes in a card name and then asks which card you would like in name format"""
+    """Returns text of card. Takes code or name.  Accepts regex."""
 
     if re.match(codevalidator, name):
         mycard = grab_card(name.upper(), cards)
@@ -133,7 +133,7 @@ async def name(ctx, name: str):
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def image(ctx, name:str):
-    """BETA: Send a card name with user input.  Returns a the image of the card selected"""
+    """Returns image of card. Takes code or name.  Accepts regex."""
 
     if re.match(codevalidator, name):
         mycard = grab_card(name.upper(), cards)
