@@ -29,21 +29,21 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
-@commands.cooldown(2, 10, type=commands.BucketType.user)
-@bot.command()
-async def code(ctx, code: str):
-    """Pass an FFTCG Card Code to get output"""
-
-    # Input validation to ensure code is 1-234A or 1-234
-    if re.match(codevalidator, code):
-        mycard = grab_card(code.upper(), cards)
-    else:
-        mycard = ''
-
-    if mycard == '':
-        await ctx.channel.send('```No Match```')
-    else:
-        await ctx.channel.send('```' + prettyCard(mycard) + '```')
+# @commands.cooldown(2, 10, type=commands.BucketType.user)
+# @bot.command()
+# async def code(ctx, code: str):
+#     """Pass an FFTCG Card Code to get output"""
+#
+#     # Input validation to ensure code is 1-234A or 1-234
+#     if re.match(codevalidator, code):
+#         mycard = grab_card(code.upper(), cards)
+#     else:
+#         mycard = ''
+#
+#     if mycard == '':
+#         await ctx.channel.send('```No Match```')
+#     else:
+#         await ctx.channel.send('```' + prettyCard(mycard) + '```')
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
@@ -76,49 +76,58 @@ async def tiny(ctx, name: str):
 async def name(ctx, name: str):
     """This request takes in a card name and then asks which card you would like in name format"""
 
-    mycard = grab_cards(name.lower(), cards)
+    if re.match(codevalidator, name):
+        mycard = grab_card(name.upper(), cards)
 
-    output = ''
-
-    if not mycard:
-        await ctx.channel.send('```No Match```')
-    else:
-        # print(len(mycard))
-        if len(mycard) >= MAX_QUERY:
-            await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
-        elif len(mycard) == 1:
-            await ctx.channel.send('```' + str(prettyCard(mycard[0])) + '```')
+        if not mycard:
+            await ctx.channel.send('```No Match```')
         else:
-            for x in mycard:
-                # print(prettyCard(x))
-                output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
+            await ctx.channel.send('```' + prettyCard(mycard) + '```')
 
-            if len(output) >= 2000:
-                await ctx.channel.send('```Too many characters for discord, please be more specific````')
+    else:
+        mycard = grab_cards(name.lower(), cards)
+
+        output = ''
+
+        if not mycard:
+            await ctx.channel.send('```No Match```')
+        else:
+            # print(len(mycard))
+            if len(mycard) >= MAX_QUERY:
+                await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
+            elif len(mycard) == 1:
+                await ctx.channel.send('```' + str(prettyCard(mycard[0])) + '```')
             else:
-                mymessage = await ctx.channel.send(
-                    '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
+                for x in mycard:
+                    # print(prettyCard(x))
+                    output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
 
-                # This is what we use to check to see if our input is within
-                # the range of our card index
-                def check(msg):
-                    # print('check ran')
-                    if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
-                        if len(mycard) >= int(msg.content) >= 1:
-                            # print(len(mycard))
-                            return True
-                    else:
-                        return False
-
-                try:
-                    message = await bot.wait_for('message', check=check, timeout=10)
-
-                except:
-                    return
-
+                if len(output) >= 2000:
+                    await ctx.channel.send('```Too many characters for discord, please be more specific````')
                 else:
-                    await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) +
-                                                 "\n\nYour Choice: " + message.content + '```')
+                    mymessage = await ctx.channel.send(
+                        '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
+
+                    # This is what we use to check to see if our input is within
+                    # the range of our card index
+                    def check(msg):
+                        # print('check ran')
+                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
+                            if len(mycard) >= int(msg.content) >= 1:
+                                # print(len(mycard))
+                                return True
+                        else:
+                            return False
+
+                    try:
+                        message = await bot.wait_for('message', check=check, timeout=10)
+
+                    except:
+                        return
+
+                    else:
+                        await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) +
+                                                     "\n\nYour Choice: " + message.content + '```')
 
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
@@ -185,7 +194,7 @@ async def image(ctx, name:str):
 #@debug.error
 @name.error
 @image.error
-@code.error
+#@code.error
 @tiny.error
 async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
