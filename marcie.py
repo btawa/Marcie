@@ -29,21 +29,6 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
-# @commands.cooldown(2, 10, type=commands.BucketType.user)
-# @bot.command()
-# async def code(ctx, code: str):
-#     """Pass an FFTCG Card Code to get output"""
-#
-#     # Input validation to ensure code is 1-234A or 1-234
-#     if re.match(codevalidator, code):
-#         mycard = grab_card(code.upper(), cards)
-#     else:
-#         mycard = ''
-#
-#     if mycard == '':
-#         await ctx.channel.send('```No Match```')
-#     else:
-#         await ctx.channel.send('```' + prettyCard(mycard) + '```')
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
@@ -191,10 +176,8 @@ async def image(ctx, name:str):
                                                                  , 'card.jpg'))
 
 
-#@debug.error
 @name.error
 @image.error
-#@code.error
 @tiny.error
 async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
