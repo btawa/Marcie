@@ -252,7 +252,7 @@ async def debug(ctx, name: str):
 @debug.error
 async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.channel.send('```Command is on cooldown for ' + ctx.author.display_name + '```')
+        await ctx.channel.send(embed=discord.Embed(title='```Command is on cooldown for ' + ctx.author.display_name + '```', color=embedcolor))
 
 
 bot.run(mytoken)
