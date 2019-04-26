@@ -175,16 +175,10 @@ async def image(ctx, name:str):
                         await ctx.channel.send(file=discord.File(getImage(mycard[int(message.content) - 1][u'Code'])
                                                                  , 'card.jpg'))
 
-@bot.command()
-async def debug(ctx):
-    embed = discord.Embed(title=prettyCard(cards[0]).split('\n', 1)[0], timestamp=datetime.datetime.now(),
-                          description=str(prettyCard(cards[0]).split('\n', 1)[1]), color=0xd93fb6)
-    embed.set_thumbnail(url=getimageURL(cards[0][u'Code']))
-    await ctx.channel.send(embed=embed)
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
-async def debug2(ctx, name: str):
+async def debug(ctx, name: str):
     """Returns text of card. Takes code or name.  Accepts regex."""
 
     if re.match(codevalidator, name):
@@ -193,7 +187,10 @@ async def debug2(ctx, name: str):
         if not mycard:
             await ctx.channel.send('```No Match```')
         else:
-            await ctx.channel.send('```' + prettyCard(mycard) + '```')
+            embed = discord.Embed(title=prettyCard(mycard).split('\n', 1)[0], timestamp=datetime.datetime.now(),
+                                  description=str(prettyCard(mycard).split('\n', 1)[1]), color=0xd93fb6)
+            embed.set_thumbnail(url=getimageURL(mycard[u'Code']))
+            await ctx.channel.send(embed=embed)
 
     else:
         mycard = grab_cards(name.lower(), cards)
@@ -207,7 +204,12 @@ async def debug2(ctx, name: str):
             if len(mycard) >= MAX_QUERY:
                 await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
             elif len(mycard) == 1:
-                await ctx.channel.send('```' + str(prettyCard(mycard[0])) + '```')
+                embed = discord.Embed(title=str(prettyCard(mycard[0]).split('\n', 1)[0]),
+                                      timestamp=datetime.datetime.now(),
+                                      description=str(prettyCard(mycard[0]).split('\n', 1)[1]),
+                                      color=0xd93fb6)
+                embed.set_thumbnail(url=getimageURL(mycard[0][u'Code']))
+                mymessage = await ctx.channel.send(embed=embed)
             else:
                 for x in mycard:
                     # print(prettyCard(x))
@@ -216,8 +218,9 @@ async def debug2(ctx, name: str):
                 if len(output) >= 2000:
                     await ctx.channel.send('```Too many characters for discord, please be more specific````')
                 else:
-                    mymessage = await ctx.channel.send(
-                        '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
+                    embed = discord.Embed(title='Please choose a card', timestamp=datetime.datetime.now(),
+                                          description=output, color=0xd93fb6)
+                    mymessage = await ctx.channel.send(embed=embed)
 
                     # This is what we use to check to see if our input is within
                     # the range of our card index
@@ -237,12 +240,15 @@ async def debug2(ctx, name: str):
                         return
 
                     else:
-                        await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) +
-                                                     "\n\nYour Choice: " + message.content + '```')
+                        embed = discord.Embed(title=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[0]), timestamp=datetime.datetime.now(),
+                                              description=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[1]), color=0xd93fb6)
+                        embed.set_thumbnail(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
+                        await mymessage.edit(embed=embed)
 
 @name.error
 @image.error
 @tiny.error
+@debug.error
 async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.channel.send('```Command is on cooldown for ' + ctx.author.display_name + '```')
