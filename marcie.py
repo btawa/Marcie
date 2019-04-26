@@ -116,7 +116,7 @@ async def name(ctx, *, name: str):
                     # the range of our card index
                     def check(msg):
                         # print('check ran')
-                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
+                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
                             if len(mycard) >= int(msg.content) >= 1:
                                 # print(len(mycard))
                                 return True
@@ -192,7 +192,7 @@ async def image(ctx, *, name: str):
                     # the range of our card index
                     def check(msg):
                         # print('check ran')
-                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
+                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
                             if len(mycard) >= int(msg.content) >= 1:
                                 # print(len(mycard))
                                 return True
