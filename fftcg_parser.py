@@ -1,10 +1,8 @@
 import json
 import re
 from html.parser import HTMLParser
-import sys
 import urllib.request
-from urllib.error import URLError, HTTPError
-
+import io
 
 # Helpful jq
 #
@@ -24,10 +22,15 @@ from urllib.error import URLError, HTTPError
 def grab_card(req, cards):
     our_card = ''
 
-    for x in cards:
-        if re.search(req, x[u'Code'].upper()):
-            our_card = x
-    return our_card
+    try:
+        req = re.compile(req)
+    except:
+        return our_card
+    else:
+        for x in cards:
+            if re.search(req, x[u'Code'].upper()):
+                our_card = x
+        return our_card
 
 
 # This function reads in a request, and a cards dictionary.
@@ -38,10 +41,16 @@ def grab_card(req, cards):
 def grab_cards(req, cards):
     our_cards = []
 
-    for x in cards:
-        if re.search(req.lower(), x[u'Name_EN'].lower()):
-            our_cards.append(x)
-    return our_cards
+    try:
+        req = re.compile(req)
+    except:
+        return our_cards
+    else:
+
+        for x in cards:
+            if re.search(req, x[u'Name_EN'].lower()):
+                our_cards.append(x)
+        return our_cards
 
 
 # This reads in a card likely from grab_card or grab_cards and
@@ -73,9 +82,11 @@ def prettyCode(card):
         element = "Dark"
     elif card[u'Element'] == u"\u96f7":
         element = "Lightning"
+    else:
+        element = ''
 
-    line1 = card[u'Code'] + ' - ' + element + " " + card[u'Cost'] + " - " + card[u'Name_EN'] + " - " + card[
-        u'Type_EN'] + " " + multicard
+    line1 = card[u'Code'] + ' - ' + card[u'Name_EN'] + ' - ' + element + " " + card[u'Cost'] + " - " + \
+            card[u'Type_EN'] + " " + multicard
 
     return line1
 
@@ -103,6 +114,8 @@ def prettyCard(card):
         element = "Dark"
     elif card[u'Element'] == u"\u96f7":
         element = "Lightning"
+    else:
+        element = ''
 
     if card[u'Multicard'] == u"\u25cb":
         multicard = '(Multi)'
@@ -110,7 +123,7 @@ def prettyCard(card):
         multicard = ''
 
     #  Prepping different lines for return
-    line1 = element + " " + card[u'Cost'] + " " + card[u'Name_EN'] + " " + "(" + card[u'Code'] + ") " + multicard
+    line1 = card[u'Name_EN'] + " - " + element + " " + card[u'Cost'] + " - " + "(" + card[u'Code'] + ") " + multicard
     line2 = card[u'Type_EN'] + " " + card[u'Job_EN'] + " " + card[u'Category_1']  # + " " + card[u'Category_2']
     line3 = card[u'Text_EN']
     line4 = card[u'Power']
@@ -169,6 +182,7 @@ def prettyCard(card):
     finished_string = finished_string.replace(u"\u300a"u"\u0039"u"\u300b", '(9)')
     finished_string = finished_string.replace(u"\u300a"u"\u0030"u"\u300b", '(0)')
     finished_string = finished_string.replace(u"\u300a" + "X" + u"\u300b", '(X)')
+    finished_string = finished_string.replace(u"\u4E00"u"\u822C", '(Generic)') # Fixes #1
 
     # Special Switch
     finished_string = finished_string.replace(u"\u300a"u"\u0053"u"\u300b", '[Special]')
@@ -189,38 +203,37 @@ def prettyCard(card):
 
     return finished_string
 
+def getImage(code):
+    """This function takes in a code as a string and returns and image that can be sent to a discord channel"""
+
+    if re.search('[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code[-6:] + '_eg.jpg'
+    else:
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code + '_eg.jpg'
+
+    try:
+        card_img = urllib.request.urlopen(URL)
+    except:
+        return
+    else:
+        data = io.BytesIO(card_img.read())
+        return data
+    finally:
+        urllib.request.urlcleanup()
+
 
 # Loading JSON from file and load it into a variable
 # data - untouched JSON from file
 # card_list - list of cards
 
 def loadJson(path):
-    data = urllib.request.urlopen(path)
-    content = data.read().decode('utf-8')
-    data = json.loads(content)
-    cards_list = data['cards']
+    try:
+        data = urllib.request.urlopen(path)
+    except:
+        return
+    else:
+        content = data.read().decode('utf-8')
+        data = json.loads(content)
+        cards_list = data['cards']
 
-    return cards_list
-
-
-# This is the url from square which has the JSON object that we use
-url = 'https://fftcg.square-enix-games.com/getcards'
-
-# Load JSON
-cards = loadJson(url)
-
-# The following code is used for testing if this specific module is being executed directly and not from marcie.
-
-# Establish what our request card will be for testing from CLI passed argument
-# req = sys.argv[1]
-
-# req2 = grab_cards(req, cards)
-
-# for x in req2:
-#  print(prettyCode(x))
-
-# Print our card to CLI
-# print(grab_cards( req , cards))
-
-# print(data)
-# print(data)
+        return cards_list
