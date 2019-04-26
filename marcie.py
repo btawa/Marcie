@@ -57,129 +57,10 @@ async def tiny(ctx, name: str):
             await ctx.channel.send('```' + output + '```')
         # print(len(output))
 
+
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def name(ctx, name: str):
-    """Returns text of card. Takes code or name.  Accepts regex."""
-
-    if re.match(codevalidator, name):
-        mycard = grab_card(name.upper(), cards)
-
-        if not mycard:
-            await ctx.channel.send('```No Match```')
-        else:
-            await ctx.channel.send('```' + prettyCard(mycard) + '```')
-
-    else:
-        mycard = grab_cards(name.lower(), cards)
-
-        output = ''
-
-        if not mycard:
-            await ctx.channel.send('```No Match```')
-        else:
-            # print(len(mycard))
-            if len(mycard) >= MAX_QUERY:
-                await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
-            elif len(mycard) == 1:
-                await ctx.channel.send('```' + str(prettyCard(mycard[0])) + '```')
-            else:
-                for x in mycard:
-                    # print(prettyCard(x))
-                    output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
-
-                if len(output) >= 2000:
-                    await ctx.channel.send('```Too many characters for discord, please be more specific````')
-                else:
-                    mymessage = await ctx.channel.send(
-                        '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
-
-                    # This is what we use to check to see if our input is within
-                    # the range of our card index
-                    def check(msg):
-                        # print('check ran')
-                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
-                            if len(mycard) >= int(msg.content) >= 1:
-                                # print(len(mycard))
-                                return True
-                        else:
-                            return False
-
-                    try:
-                        message = await bot.wait_for('message', check=check, timeout=10)
-
-                    except:
-                        return
-
-                    else:
-                        await mymessage.edit(content='```' + str(prettyCard(mycard[int(message.content) - 1])) +
-                                                     "\n\nYour Choice: " + message.content + '```')
-
-
-@commands.cooldown(2, 10, type=commands.BucketType.user)
-@bot.command()
-async def image(ctx, name:str):
-    """Returns image of card. Takes code or name.  Accepts regex."""
-
-    if re.match(codevalidator, name):
-        mycard = grab_card(name.upper(), cards)
-
-        if not mycard:
-            await ctx.channel.send('```No Match```')
-        else:
-            await ctx.channel.send(file=discord.File(getImage(mycard[u'Code']), 'card.jpg'))
-
-    else:
-        mycard = grab_cards(name.lower(), cards)
-
-        output = ''
-
-        if not mycard:
-            await ctx.channel.send('```No Match```')
-        else:
-            # print(len(mycard))
-            if len(mycard) >= MAX_QUERY:
-                await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
-            elif len(mycard) == 1:
-                await ctx.channel.send(file=discord.File(getImage(mycard[0][u'Code']), 'card.jpg'))
-            else:
-                for x in mycard:
-                    # print(prettyCard(x))
-                    output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
-
-                if len(output) >= 2000:
-                    await ctx.channel.send('```Too many characters for discord, please be more specific````')
-                else:
-                    mymessage = await ctx.channel.send(
-                        '```' + output + '\nPlease respond with the card you would like (Ex: 1) [Timeout: 10s]: ' + '```')
-
-                    # This is what we use to check to see if our input is within
-                    # the range of our card index
-                    def check(msg):
-                        # print('check ran')
-                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
-                            if len(mycard) >= int(msg.content) >= 1:
-                                # print(len(mycard))
-                                return True
-                        else:
-                            return False
-
-                    try:
-                        message = await bot.wait_for('message', check=check, timeout=10)
-
-                    except:
-                        return
-
-                    else:
-                        await mymessage.edit(content='```You chose: ' +
-                                                     prettyCode(mycard[int(message.content) - 1 ]) + '```')
-                        await ctx.channel.send(file=discord.File(getImage(mycard[int(message.content) - 1][u'Code'])
-                                                                 , 'card.jpg'))
-
-# Testing embed functionality
-@commands.cooldown(2, 10, type=commands.BucketType.user)
-@bot.command()
-async def debug(ctx, name: str):
     """Returns text of card. Takes code or name.  Accepts regex."""
 
     if re.match(codevalidator, name):
@@ -203,7 +84,9 @@ async def debug(ctx, name: str):
         else:
             # print(len(mycard))
             if len(mycard) >= MAX_QUERY:
-                await ctx.channel.send(embed=discord.Embed(title='Too many characters for discord, please be more specific', color=embedcolor))
+                await ctx.channel.send(embed=discord.Embed(title='Too many cards please be more specific',
+                                                           color=embedcolor))
+
             elif len(mycard) == 1:
                 embed = discord.Embed(title=str(prettyCard(mycard[0]).split('\n', 1)[0]),
                                       timestamp=datetime.datetime.now(),
@@ -211,13 +94,15 @@ async def debug(ctx, name: str):
                                       color=0xd93fb6)
                 embed.set_thumbnail(url=getimageURL(mycard[0][u'Code']))
                 mymessage = await ctx.channel.send(embed=embed)
+
             else:
                 for x in mycard:
                     # print(prettyCard(x))
                     output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
 
                 if len(output) >= 2000:
-                    await ctx.channel.send(embed=discord.Embed(title='Too many characters for discord, please be more specific', color=embedcolor))
+                    await ctx.channel.send(embed=discord.Embed(
+                        title='Too many characters for discord, please be more specific', color=embedcolor))
                 else:
                     embed = discord.Embed(title='Please choose a card', timestamp=datetime.datetime.now(),
                                           description=output, color=0xd93fb6)
@@ -241,9 +126,82 @@ async def debug(ctx, name: str):
                         return
 
                     else:
-                        embed = discord.Embed(title=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[0]), timestamp=datetime.datetime.now(),
-                                              description=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[1]), color=0xd93fb6)
+                        embed = discord.Embed(title=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[0]),
+                                              timestamp=datetime.datetime.now(),
+                                              description=str(
+                                                  prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[1]),
+                                              color=0xd93fb6)
                         embed.set_thumbnail(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
+                        await mymessage.edit(embed=embed)
+
+
+# Testing embed functionality
+@commands.cooldown(2, 10, type=commands.BucketType.user)
+@bot.command()
+async def image(ctx, name: str):
+    """Returns text of card. Takes code or name.  Accepts regex."""
+
+    if re.match(codevalidator, name):
+        mycard = grab_card(name.upper(), cards)
+
+        if not mycard:
+            await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
+        else:
+            embed = discord.Embed(timestamp=datetime.datetime.now(), color=0xd93fb6)
+            embed.set_image(url=getimageURL(mycard[u'Code']))
+            await ctx.channel.send(embed=embed)
+
+    else:
+        mycard = grab_cards(name.lower(), cards)
+
+        output = ''
+
+        if not mycard:
+            await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
+        else:
+            # print(len(mycard))
+            if len(mycard) >= MAX_QUERY:
+                await ctx.channel.send(embed=discord.Embed(title='Too many cards please be more specific',
+                                                           color=embedcolor))
+
+            elif len(mycard) == 1:
+                embed = discord.Embed(timestamp=datetime.datetime.now(), color=0xd93fb6)
+                embed.set_image(url=getimageURL(mycard[0][u'Code']))
+                mymessage = await ctx.channel.send(embed=embed)
+
+            else:
+                for x in mycard:
+                    # print(prettyCard(x))
+                    output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
+
+                if len(output) >= 2000:
+                    await ctx.channel.send(embed=discord.Embed(
+                        title='Too many characters for discord, please be more specific', color=embedcolor))
+                else:
+                    embed = discord.Embed(title='Please choose a card', timestamp=datetime.datetime.now(),
+                                          description=output, color=0xd93fb6)
+                    mymessage = await ctx.channel.send(embed=embed)
+
+                    # This is what we use to check to see if our input is within
+                    # the range of our card index
+                    def check(msg):
+                        # print('check ran')
+                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel:
+                            if len(mycard) >= int(msg.content) >= 1:
+                                # print(len(mycard))
+                                return True
+                        else:
+                            return False
+
+                    try:
+                        message = await bot.wait_for('message', check=check, timeout=10)
+
+                    except:
+                        return
+
+                    else:
+                        embed = discord.Embed(timestamp=datetime.datetime.now(), color=0xd93fb6)
+                        embed.set_image(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
                         await mymessage.edit(embed=embed)
 
 
@@ -251,7 +209,6 @@ async def debug(ctx, name: str):
 @name.error
 @image.error
 @tiny.error
-@debug.error
 async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.channel.send(embed=discord.Embed(title='```Command is on cooldown for ' + ctx.author.display_name + '```', color=embedcolor))
