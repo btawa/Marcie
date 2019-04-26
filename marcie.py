@@ -206,4 +206,12 @@ async def image(ctx, *, name: str):
                         await mymessage.edit(embed=embed)
 
 
+@name.error
+@image.error
+@tiny.error
+async def cooldown_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.channel.send('```Command is on cooldown for ' + ctx.author.display_name + '```')
+
+
 bot.run(mytoken)
