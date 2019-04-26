@@ -100,7 +100,10 @@ async def name(ctx, *, name: str):
             else:
                 for x in mycard:
                     # print(prettyCard(x))
-                    output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
+                    if mycard.index(x) == 0:
+                        output = str(mycard.index(x) + 1) + ".) " + prettyCode(x)
+                    else:
+                        output = output + "\n" + str(mycard.index(x) + 1) + ".) " + prettyCode(x)
 
                 if len(output) >= 2000:
                     await ctx.channel.send(embed=discord.Embed(
@@ -176,7 +179,10 @@ async def image(ctx, *, name: str):
             else:
                 for x in mycard:
                     # print(prettyCard(x))
-                    output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
+                    if mycard.index(x) == 0:
+                        output = str(mycard.index(x) + 1) + ".) " + prettyCode(x)
+                    else:
+                        output = output + "\n" + str(mycard.index(x) + 1) + ".) " + prettyCode(x)
 
                 if len(output) >= 2000:
                     await ctx.channel.send(embed=discord.Embed(
