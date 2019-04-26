@@ -69,7 +69,6 @@ async def name(ctx, *, name: str):
         if not mycard:
             await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
         else:
-            await ctx.channel.send(str(datetime.datetime.utcnow()))
             embed = discord.Embed(title=prettyCard(mycard).split('\n', 1)[0],
                                   timestamp=datetime.datetime.utcnow(),
                                   description=str(prettyCard(mycard).split('\n', 1)[1]),
