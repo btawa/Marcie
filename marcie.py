@@ -5,7 +5,6 @@ import sys
 import re
 import datetime
 
-
 # For FFTCG Parser Commands
 fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
 cards = loadJson(fftcgURL)
@@ -28,6 +27,7 @@ async def on_ready():
     print('Logged in as')
     print(bot.user.name)
     print(bot.user.id)
+    print(datetime.datetime.utcnow())
     print('------')
 
 
@@ -69,7 +69,8 @@ async def name(ctx, name: str):
         if not mycard:
             await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
         else:
-            embed = discord.Embed(title=prettyCard(mycard).split('\n', 1)[0], timestamp=datetime.datetime.now(),
+            await ctx.channel.send(str(datetime.datetime.utcnow()))
+            embed = discord.Embed(title=prettyCard(mycard).split('\n', 1)[0], timestamp=datetime.datetime.utcnow(),
                                   description=str(prettyCard(mycard).split('\n', 1)[1]), color=0xd93fb6)
             embed.set_thumbnail(url=getimageURL(mycard[u'Code']))
             await ctx.channel.send(embed=embed)
@@ -89,7 +90,7 @@ async def name(ctx, name: str):
 
             elif len(mycard) == 1:
                 embed = discord.Embed(title=str(prettyCard(mycard[0]).split('\n', 1)[0]),
-                                      timestamp=datetime.datetime.now(),
+                                      timestamp=datetime.datetime.utcnow(),
                                       description=str(prettyCard(mycard[0]).split('\n', 1)[1]),
                                       color=0xd93fb6)
                 embed.set_thumbnail(url=getimageURL(mycard[0][u'Code']))
@@ -104,7 +105,7 @@ async def name(ctx, name: str):
                     await ctx.channel.send(embed=discord.Embed(
                         title='Too many characters for discord, please be more specific', color=embedcolor))
                 else:
-                    embed = discord.Embed(title='Please choose a card by typing its number', timestamp=datetime.datetime.now(),
+                    embed = discord.Embed(title='Please choose a card by typing its number', timestamp=datetime.datetime.utcnow(),
                                           description=output, color=0xd93fb6)
                     mymessage = await ctx.channel.send(embed=embed)
 
@@ -127,7 +128,7 @@ async def name(ctx, name: str):
 
                     else:
                         embed = discord.Embed(title=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[0]),
-                                              timestamp=datetime.datetime.now(),
+                                              timestamp=datetime.datetime.utcnow(),
                                               description=str(
                                                   prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[1]),
                                               color=0xd93fb6)
@@ -147,7 +148,7 @@ async def image(ctx, name: str):
         if not mycard:
             await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
         else:
-            embed = discord.Embed(timestamp=datetime.datetime.now(), color=0xd93fb6)
+            embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=0xd93fb6)
             embed.set_image(url=getimageURL(mycard[u'Code']))
             await ctx.channel.send(embed=embed)
 
@@ -165,7 +166,7 @@ async def image(ctx, name: str):
                                                            color=embedcolor))
 
             elif len(mycard) == 1:
-                embed = discord.Embed(timestamp=datetime.datetime.now(), color=0xd93fb6)
+                embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=0xd93fb6)
                 embed.set_image(url=getimageURL(mycard[0][u'Code']))
                 mymessage = await ctx.channel.send(embed=embed)
 
@@ -178,7 +179,7 @@ async def image(ctx, name: str):
                     await ctx.channel.send(embed=discord.Embed(
                         title='Too many characters for discord, please be more specific', color=embedcolor))
                 else:
-                    embed = discord.Embed(title='Please choose a card by typing its number', timestamp=datetime.datetime.now(),
+                    embed = discord.Embed(title='Please choose a card by typing its number', timestamp=datetime.datetime.utcnow(),
                                           description=output, color=0xd93fb6)
                     mymessage = await ctx.channel.send(embed=embed)
 
@@ -200,18 +201,9 @@ async def image(ctx, name: str):
                         return
 
                     else:
-                        embed = discord.Embed(timestamp=datetime.datetime.now(), color=0xd93fb6)
+                        embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=0xd93fb6)
                         embed.set_image(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
                         await mymessage.edit(embed=embed)
-
-
-# Error handling for cooldowns
-@name.error
-@image.error
-@tiny.error
-async def cooldown_error(ctx, error):
-    if isinstance(error, commands.CommandOnCooldown):
-        await ctx.channel.send(embed=discord.Embed(title='```Command is on cooldown for ' + ctx.author.display_name + '```', color=embedcolor))
 
 
 bot.run(mytoken)
