@@ -33,7 +33,7 @@ async def on_ready():
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
-async def tiny(ctx, name: str):
+async def tiny(ctx, *, name: str):
     """List cards that match the search."""
 
     mycard = grab_cards(name.lower(), cards)
@@ -60,7 +60,7 @@ async def tiny(ctx, name: str):
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
-async def name(ctx, name: str):
+async def name(ctx, *, name: str):
     """Returns text of card. Takes code or name.  Accepts regex."""
 
     if re.match(codevalidator, name):
@@ -139,7 +139,7 @@ async def name(ctx, name: str):
 # Testing embed functionality
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
-async def image(ctx, name: str):
+async def image(ctx, *, name: str):
     """Returns text of card. Takes code or name.  Accepts regex."""
 
     if re.match(codevalidator, name):
