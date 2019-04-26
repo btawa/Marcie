@@ -104,7 +104,7 @@ async def name(ctx, name: str):
                     await ctx.channel.send(embed=discord.Embed(
                         title='Too many characters for discord, please be more specific', color=embedcolor))
                 else:
-                    embed = discord.Embed(title='Please choose a card', timestamp=datetime.datetime.now(),
+                    embed = discord.Embed(title='Please choose a card by typing its number', timestamp=datetime.datetime.now(),
                                           description=output, color=0xd93fb6)
                     mymessage = await ctx.channel.send(embed=embed)
 
@@ -178,7 +178,7 @@ async def image(ctx, name: str):
                     await ctx.channel.send(embed=discord.Embed(
                         title='Too many characters for discord, please be more specific', color=embedcolor))
                 else:
-                    embed = discord.Embed(title='Please choose a card', timestamp=datetime.datetime.now(),
+                    embed = discord.Embed(title='Please choose a card by typing its number', timestamp=datetime.datetime.now(),
                                           description=output, color=0xd93fb6)
                     mymessage = await ctx.channel.send(embed=embed)
 
