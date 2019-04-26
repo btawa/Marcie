@@ -221,6 +221,13 @@ def getImage(code):
     finally:
         urllib.request.urlcleanup()
 
+def getURL(code):
+    if re.search('[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code[-6:] + '_eg.jpg'
+    else:
+        URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code + '_eg.jpg'
+
+    return URL
 
 # Loading JSON from file and load it into a variable
 # data - untouched JSON from file

@@ -179,7 +179,7 @@ async def image(ctx, name:str):
 async def debug(ctx):
     embed = discord.Embed(title=prettyCard(cards[0]).split('\n', 1)[0], timestamp=datetime.datetime.now(),
                           description=str(prettyCard(cards[0]).split('\n', 1)[1]), color=0xd93fb6)
-    embed.set_thumbnail(url='https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/1-001H_eg.jpg')
+    embed.set_thumbnail(url=getURL(cards[0][u'Code']))
     await ctx.channel.send(embed=embed)
 
 @name.error
