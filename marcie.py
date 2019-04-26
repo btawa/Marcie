@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from fftcg_parser import *
-import io
 import sys
 import re
+import datetime
 
 
 # For FFTCG Parser Commands
@@ -175,6 +175,12 @@ async def image(ctx, name:str):
                         await ctx.channel.send(file=discord.File(getImage(mycard[int(message.content) - 1][u'Code'])
                                                                  , 'card.jpg'))
 
+@bot.command()
+async def debug(ctx):
+    embed = discord.Embed(title=prettyCard(cards[0]).split('\n', 1)[0], timestamp=datetime.datetime.now(),
+                          description=str(prettyCard(cards[0]).split('\n', 1)[1]), color=0xd93fb6)
+    embed.set_thumbnail(url='https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/1-001H_eg.jpg')
+    await ctx.channel.send(embed=embed)
 
 @name.error
 @image.error
