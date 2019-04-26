@@ -221,7 +221,7 @@ def getImage(code):
     finally:
         urllib.request.urlcleanup()
 
-def getURL(code):
+def getimageURL(code):
     if re.search('[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
         URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code[-6:] + '_eg.jpg'
     else:
