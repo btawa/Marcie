@@ -10,6 +10,7 @@ import datetime
 fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
+embedcolor=0xd93fb6
 codevalidator = re.compile('^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$')
 
 # Used to pass token as a variable when launching bot
@@ -185,7 +186,7 @@ async def debug(ctx, name: str):
         mycard = grab_card(name.upper(), cards)
 
         if not mycard:
-            await ctx.channel.send('```No Match```')
+            await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
         else:
             embed = discord.Embed(title=prettyCard(mycard).split('\n', 1)[0], timestamp=datetime.datetime.now(),
                                   description=str(prettyCard(mycard).split('\n', 1)[1]), color=0xd93fb6)
@@ -198,11 +199,11 @@ async def debug(ctx, name: str):
         output = ''
 
         if not mycard:
-            await ctx.channel.send('```No Match```')
+            await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
         else:
             # print(len(mycard))
             if len(mycard) >= MAX_QUERY:
-                await ctx.channel.send('```' + 'Too many cards please be more specific' + '```')
+                await ctx.channel.send(embed=discord.Embed(title='Too many characters for discord, please be more specific', color=embedcolor))
             elif len(mycard) == 1:
                 embed = discord.Embed(title=str(prettyCard(mycard[0]).split('\n', 1)[0]),
                                       timestamp=datetime.datetime.now(),
@@ -216,7 +217,7 @@ async def debug(ctx, name: str):
                     output = output + str(mycard.index(x) + 1) + ".) " + prettyCode(x) + "\n"
 
                 if len(output) >= 2000:
-                    await ctx.channel.send('```Too many characters for discord, please be more specific````')
+                    await ctx.channel.send(embed=discord.Embed(title='Too many characters for discord, please be more specific', color=embedcolor))
                 else:
                     embed = discord.Embed(title='Please choose a card', timestamp=datetime.datetime.now(),
                                           description=output, color=0xd93fb6)
