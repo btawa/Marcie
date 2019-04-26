@@ -217,8 +217,8 @@ async def image(ctx, *, name: str):
 async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.channel.send(embed=discord.Embed(
-            description='Command is on cooldown for ' + ctx.author.display_name),
-            color=embedcolor)
+            description='Command is on cooldown for ' + ctx.author.display_name,
+            color=embedcolor))
 
 
 bot.run(mytoken)
