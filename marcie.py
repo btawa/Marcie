@@ -246,6 +246,8 @@ async def debug(ctx, name: str):
                         embed.set_thumbnail(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
                         await mymessage.edit(embed=embed)
 
+
+# Error handling for cooldowns
 @name.error
 @image.error
 @tiny.error
