@@ -176,7 +176,7 @@ async def image(ctx, name:str):
                         await ctx.channel.send(file=discord.File(getImage(mycard[int(message.content) - 1][u'Code'])
                                                                  , 'card.jpg'))
 
-
+# Testing embed functionality
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def debug(ctx, name: str):
