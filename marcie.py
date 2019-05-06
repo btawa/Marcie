@@ -7,6 +7,8 @@ import datetime
 import logging
 import uuid
 
+__author__ = "Japnix"
+
 # Enable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
