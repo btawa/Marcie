@@ -17,7 +17,7 @@ fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 embedcolor=0xd93fb6
-codevalidator = re.compile('^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$')
+codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$')
 
 # Used to pass token as a variable when launching bot
 # Allows to not post sensitive data to github
@@ -166,7 +166,7 @@ async def name(ctx, *, name: str):
                     # This is what we use to check to see if our input is within
                     # the range of our card index
                     def check(msg):
-                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
+                        if re.match(r'^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
                             if len(mycard) >= int(msg.content) >= 1:
                                 logging.info('Choice: ' + msg.content)
                                 return True
@@ -275,7 +275,7 @@ async def image(ctx, *, name: str):
                     # This is what we use to check to see if our input is within
                     # the range of our card index
                     def check(msg):
-                        if re.match('^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
+                        if re.match(r'^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
                             if len(mycard) >= int(msg.content) >= 1:
                                 logging.info('Choice: ' + msg.content)
                                 return True
