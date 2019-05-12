@@ -60,7 +60,7 @@ def grab_cards(req, cards):
 def prettyCode(card):
     # Multicard Check
     if card[u'Multicard'] == u"\u25cb":
-        multicard = '(Multi)'
+        multicard = '(Generic)'
     else:
         multicard = ''
 
@@ -117,7 +117,7 @@ def prettyCard(card):
         element = ''
 
     if card[u'Multicard'] == u"\u25cb":
-        multicard = '(Multi)'
+        multicard = '(Generic)'
     else:
         multicard = ''
 
