@@ -69,7 +69,7 @@ async def tiny(ctx, *, name: str):
     output = ''
 
     if mycard == []:
-        await ctx.channel.send('```No Match```')
+        output = '```No Match```'
     else:
         if len(mycard) >= MAX_QUERY:
             output = 'Too many cards please be more specific'
@@ -78,9 +78,11 @@ async def tiny(ctx, *, name: str):
                 output = output + prettyCode(x) + "\n"
 
         if len(output) >= 2000:
-            await ctx.channel.send('```Too many characters for discord, please be more specific````')
+            output = '```Too many characters for discord, please be more specific````'
         else:
-            await ctx.channel.send('```' + output + '```')
+            output = '```' + output + '```'
+
+    await ctx.channel.send(output)
 
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
