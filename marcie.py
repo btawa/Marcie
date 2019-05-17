@@ -65,7 +65,7 @@ async def on_guild_join(ctx):
     with open(settingsjson, 'r') as myfile:
         myjson = json.load(myfile)
 
-    myjson[str(ctx.id)] = {'prefix': '?'}
+    myjson[str(ctx.id)] = {'prefix': '?', 'name': str(ctx.name)}
 
     with open(settingsjson, 'w+') as myfile:
         json.dump(myjson, myfile)
