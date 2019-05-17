@@ -403,6 +403,7 @@ async def prefix(ctx, prefix):
         myjson = json.load(myfile)
 
     if ctx.message.author.id == ctx.guild.owner.id or ctx.message.author.guild_permissions.administrator is True:
+        logging.info(ctx.guild.name + ' (' + str(ctx.guild.id) + ') ' + 'changed prefix to ' + prefix)
         myjson[str(ctx.guild.id)]['prefix'] = prefix
         embed = discord.Embed(title='Switched prefix to ' + str(prefix), color=embedcolor,
                               timestamp=datetime.datetime.utcnow())
