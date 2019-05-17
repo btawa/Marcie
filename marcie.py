@@ -6,8 +6,18 @@ import re
 import datetime
 import logging
 import uuid
+import os
+import json
 
 __author__ = "Japnix"
+
+
+# Read in prefix from settings.json
+async def get_pre(bot, message):
+    with open(os.path.dirname(__file__) + "/settings.json", 'r') as x:
+        myfile = json.loads(x.read())
+
+    return myfile[str(message.guild.id)]['prefix']
 
 # Enable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
@@ -18,6 +28,7 @@ cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 embedcolor=0xd93fb6
 codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$')
+settingsjson = os.path.dirname(__file__) + "/settings.json"
 
 # Used to pass token as a variable when launching bot
 # Allows to not post sensitive data to github
@@ -27,7 +38,38 @@ mytoken = sys.argv[1]
 description = '''Marcie FFTCG Bot
 '''
 
-bot = commands.Bot(command_prefix='?', description=description)
+bot = commands.Bot(command_prefix=get_pre, description=description)
+
+
+@bot.event
+async def on_guild_remove(ctx):
+    logging.info('Guild ' + ctx.name + ' removed ' + ctx.me.display_name + '.')
+    with open(settingsjson, 'r') as myfile:
+        myjson = json.load(myfile)
+
+    del myjson[str(ctx.id)]
+
+    with open(settingsjson, 'w+') as myfile:
+        json.dump(myjson, myfile)
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        logging.info(str(error))
+
+
+@bot.event
+async def on_guild_join(ctx):
+    logging.info('Guild ' + ctx.name + ' added ' + ctx.me.display_name + '.')
+    with open(settingsjson, 'r') as myfile:
+        myjson = json.load(myfile)
+
+    myjson[str(ctx.id)] = {'prefix': '?'}
+
+    with open(settingsjson, 'w+') as myfile:
+        json.dump(myjson, myfile)
+
 
 @bot.event
 async def on_ready():
@@ -38,6 +80,20 @@ async def on_ready():
     print('Guilds Added: ' + str(len(bot.guilds)))
     print('------')
 
+    if os.path.isfile(os.path.dirname(__file__) + "/settings.json"):
+        print('Loaded settings.json')
+        with open(os.path.dirname(__file__) + "/settings.json", 'r') as myfile:
+            myfile = json.loads(myfile.read())
+
+    else:
+        print('Creating settings.json')
+        myfile = open(os.path.dirname(__file__) + '/settings.json', 'w+')
+        myjson = {}
+        for x in bot.guilds:
+            myjson[str(x.id)] = {'prefix': '?'}
+
+        json.dump(myjson, myfile)
+        myfile.close()
 
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
@@ -216,7 +272,6 @@ async def name(ctx, *, name: str):
                         await mymessage.edit(embed=embed)
 
 
-# Testing embed functionality
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def image(ctx, *, name: str):
@@ -330,14 +385,35 @@ async def cooldown_error(ctx, error):
             description='Command is on cooldown for ' + ctx.author.display_name,
             color=embedcolor))
 
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound):
-        logging.info(str(error))
 
-@bot.event
-async def on_guild_join(ctx):
-    logging.info('Guild ' + ctx.name + ' added ' + ctx.me.display_name + '.')
+@bot.command()
+async def prefix(ctx, prefix):
+    """This command allows guild owners to change the prefix used for commands.
+
+    The default prefix is `?` EX: ?name WOL.
+
+    Example:
+        ?prefix z!
+
+        Then...
+        z!name WOL
+    """
+
+    with open(settingsjson, 'r') as myfile:
+        myjson = json.load(myfile)
+
+    if ctx.message.author.id == ctx.guild.owner.id:
+        myjson[str(ctx.guild.id)]['prefix'] = prefix
+        embed = discord.Embed(title='Switched prefix to ' + str(prefix), color=embedcolor,
+                              timestamp=datetime.datetime.utcnow())
+
+        with open(settingsjson, 'w+') as myfile:
+            json.dump(myjson, myfile)
+
+    else:
+        embed = discord.Embed(title='You are not the guild owner.', color=embedcolor,
+                              timestamp=datetime.datetime.utcnow())
+    await ctx.channel.send(embed=embed)
 
 
 bot.run(mytoken)
