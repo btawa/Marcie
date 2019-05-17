@@ -388,7 +388,7 @@ async def cooldown_error(ctx, error):
 
 @bot.command()
 async def prefix(ctx, prefix):
-    """This command allows guild owners to change the prefix used for commands.
+    """This command allows guild owners or administrators to change the prefix used for commands.
 
     The default prefix is `?` EX: ?name WOL.
 
@@ -402,7 +402,7 @@ async def prefix(ctx, prefix):
     with open(settingsjson, 'r') as myfile:
         myjson = json.load(myfile)
 
-    if ctx.message.author.id == ctx.guild.owner.id:
+    if ctx.message.author.id == ctx.guild.owner.id or ctx.message.author.guild_permissions.administrator is True:
         myjson[str(ctx.guild.id)]['prefix'] = prefix
         embed = discord.Embed(title='Switched prefix to ' + str(prefix), color=embedcolor,
                               timestamp=datetime.datetime.utcnow())
@@ -411,7 +411,7 @@ async def prefix(ctx, prefix):
             json.dump(myjson, myfile)
 
     else:
-        embed = discord.Embed(title='You are not the guild owner.', color=embedcolor,
+        embed = discord.Embed(title='You are not the guild owner or administrator.', color=embedcolor,
                               timestamp=datetime.datetime.utcnow())
     await ctx.channel.send(embed=embed)
 
