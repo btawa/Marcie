@@ -390,12 +390,13 @@ async def cooldown_error(ctx, error):
 async def prefix(ctx, prefix):
     """This command allows guild owners or administrators to change the prefix used for commands.
 
-    The default prefix is `?` EX: ?name WOL.
+    The default prefix is `?`
 
     Example:
         ?prefix z!
 
         Then...
+
         z!name WOL
     """
 

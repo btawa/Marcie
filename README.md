@@ -89,3 +89,17 @@ the overall card name.
 Example:
     ?tiny auron
 ```
+
+### ?prefix <prefix>
+```
+This command allows guild owners or administrators to change the prefix used for commands.
+
+The default prefix is `?`
+
+Example:
+    ?prefix z!
+
+    Then...
+    
+    z!name WOL
+```
