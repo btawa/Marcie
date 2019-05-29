@@ -143,6 +143,33 @@ async def tiny(ctx, *, name: str):
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
+async def pack(ctx, opus):
+    """BETA - Returns a randomized pack based on the opus you provide.
+
+    Example:
+    ?pack 8
+
+    """
+
+    my_uuid = uuid.uuid1().hex[:10]
+    logging.info(str(ctx.prefix) + str(ctx.command) + ' ' + str(name) + ' - ID: ' + my_uuid)
+
+    mycard = getPack(opus, cards)
+
+    output = ''
+
+    if mycard == None:
+        output = '```Invalid Opus```'
+    else:
+        for x in mycard:
+            output = output + prettyCode(x) + "\n"
+
+        output = '```' + output + '```'
+        await ctx.channel.send(output)
+
+
+@commands.cooldown(2, 10, type=commands.BucketType.user)
+@bot.command()
 async def name(ctx, *, name: str):
     """Returns text of card. Takes code or name.  Accepts regex.
 
@@ -375,7 +402,7 @@ async def image(ctx, *, name: str):
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
 
-
+@pack.error
 @name.error
 @image.error
 @tiny.error

@@ -2,6 +2,8 @@ import json
 import re
 import urllib.request
 import io
+import roman
+import random
 
 # Helpful jq
 #
@@ -240,3 +242,124 @@ def loadJson(path):
         cards_list = data['cards']
 
         return cards_list
+
+def prettyTrice(string):
+
+    # Weird bracket removal:
+    string = string.replace(u"\u300a", '(')
+    string = string.replace(u"\u300b", ')')
+    string = string.replace('&middot;', u"\u00B7")
+
+    # Replace Element Logos
+    string = string.replace(u"\u571F", 'Earth')
+    string = string.replace(u"\u6c34", 'Water')
+    string = string.replace(u"\u706b", 'Fire')
+    string = string.replace(u"\u98a8", 'Wind')
+    string = string.replace(u"\u6c37", 'Ice')
+    string = string.replace(u"\u5149", 'Light')
+    string = string.replace(u"\u95c7", 'Dark')
+    string = string.replace(u"\u96f7", 'Lightning')
+
+    # Replace EX Burst
+    string = string.replace('[[ex]]', '')
+    string = string.replace('[[/]]', '')
+    string = string.replace('EX BURST', '[EX BURST]')
+
+    # Special Switch
+    string = string.replace(u"\u300a"u"\u0053"u"\u300b", '[Special]')
+
+    # Formatting Fixes
+    string = string.replace('[[', '<')
+    string = string.replace(']]', '>')
+    string = string.replace('<s>', '')
+    string = string.replace('</>', '')
+    string = string.replace('<i>', '')
+    string = string.replace('<br> ', '\n')
+    string = string.replace('<br>', '\n')
+
+    # Formatting Fixes
+    string = string.replace('[[', '<')
+    string = string.replace(']]', '>')
+    string = string.replace('<s>', '')
+    string = string.replace('</>', '')
+    string = string.replace('<i>', '')
+    string = string.replace('<br> ', '\n')
+    string = string.replace('<br>', '\n')
+
+    # Replace Fullwidth Numbers with normal numbers
+    string = string.replace(u"\uFF11", '1')
+    string = string.replace(u"\uFF12", '2')
+    string = string.replace(u"\uFF13", '3')
+    string = string.replace(u"\uFF14", '4')
+    string = string.replace(u"\uFF15", '5')
+    string = string.replace(u"\uFF16", '6')
+    string = string.replace(u"\uFF17", '7')
+    string = string.replace(u"\uFF18", '8')
+    string = string.replace(u"\uFF19", '9')
+    string = string.replace(u"\uFF10", '0')
+
+    string = string.replace(u"\u4E00"u"\u822C", 'Generic')  # Fixes #1
+
+    # Tap Symbol
+    string = string.replace(u"\u30C0"u"\u30EB", 'Dull')
+
+
+
+    # Double quotes with YURI?
+    string = string.replace("\"\"", '\"')
+
+
+    return string
+
+
+def getPack(set, cards):
+
+    try:
+        opus = roman.toRoman(int(set))
+        opus = f'Opus {opus}'
+    except:
+        return
+
+    try:
+        mycards = []
+
+        heroics = []
+        commons = []
+        legendaries = []
+        rares = []
+        starters = []
+
+        pack = []
+
+        for card in cards:
+            if card['Set'] == opus:
+                mycards.append(card)
+
+        for x in range(0,len(mycards)):
+            if re.search(r'H', mycards[x]['Code']):
+                heroics.append(mycards[x])
+            elif re.search(r'C', mycards[x]['Code']):
+                commons.append(mycards[x])
+            elif re.search(r'L', mycards[x]['Code']):
+                legendaries.append(mycards[x])
+            elif re.search(r'R', mycards[x]['Code']):
+                rares.append(mycards[x])
+            elif re.search(r'S', mycards[x]['Code']):
+                starters.append(mycards[x])
+
+        for x in range(0,12):
+            if x <= 6:
+                pack.append(commons[random.randint(0,len(commons))])
+            elif 7 <= x <= 9:
+                pack.append(rares[random.randint(0, len(rares))])
+            elif x == 10:
+                pack.append(mycards[random.randint(0, len(mycards))])
+            elif x == 11:
+                if random.randint(1,10) <= 2:
+                    pack.append(legendaries[random.randint(0, len(legendaries))])
+                else:
+                    pack.append(heroics[random.randint(0, len(heroics))])
+        return pack
+
+    except:
+        return
