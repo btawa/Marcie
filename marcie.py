@@ -159,13 +159,13 @@ async def pack(ctx, opus):
     output = ''
 
     if mycard == None:
-        output = '```Invalid Opus```'
+        output = 'Invalid Opus'
     else:
         for x in mycard:
             output = output + prettyCode(x) + "\n"
 
-        output = '```' + output + '```'
-        await ctx.channel.send(output)
+    output = '```' + output + '```'
+    await ctx.channel.send(output)
 
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
