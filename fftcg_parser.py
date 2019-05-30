@@ -4,6 +4,7 @@ import urllib.request
 import io
 import roman
 import random
+import requests
 
 # Helpful jq
 #
@@ -201,6 +202,7 @@ def prettyCard(card):
 
     return finished_string
 
+
 def getImage(code):
     """This function takes in a code as a string and returns and image that can be sent to a discord channel"""
 
@@ -219,6 +221,7 @@ def getImage(code):
     finally:
         urllib.request.urlcleanup()
 
+
 def getimageURL(code):
     if re.search(r'[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
         URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code[-6:] + '_eg.jpg'
@@ -226,6 +229,7 @@ def getimageURL(code):
         URL = 'https://fftcg.square-enix-games.com/theme/tcg/images/cards/full/' + code + '_eg.jpg'
 
     return URL
+
 
 # Loading JSON from file and load it into a variable
 # data - untouched JSON from file
@@ -242,6 +246,7 @@ def loadJson(path):
         cards_list = data['cards']
 
         return cards_list
+
 
 def prettyTrice(string):
 
@@ -303,34 +308,29 @@ def prettyTrice(string):
     # Tap Symbol
     string = string.replace(u"\u30C0"u"\u30EB", 'Dull')
 
-
-
     # Double quotes with YURI?
     string = string.replace("\"\"", '\"')
-
 
     return string
 
 
-def getPack(set, cards):
+def getPack(opusnumber, cards):
+
+    mycards = []
+    heroics = []
+    commons = []
+    legendaries = []
+    rares = []
+    starters = []
+    pack = []
 
     try:
-        opus = roman.toRoman(int(set))
+        opus = roman.toRoman(int(opusnumber))
         opus = f'Opus {opus}'
     except:
         return
 
     try:
-        mycards = []
-
-        heroics = []
-        commons = []
-        legendaries = []
-        rares = []
-        starters = []
-
-        pack = []
-
         for card in cards:
             if card['Set'] == opus:
                 mycards.append(card)
@@ -363,3 +363,23 @@ def getPack(set, cards):
 
     except:
         return
+
+
+def createstrawpoll(pollname, cards):
+
+    strawpoll_url = 'https://www.strawpoll.me/api/v2/polls'
+    options = []
+
+    for x in range(len(cards)):
+        options.append(prettyTrice(f"{cards[x]['Name_NA']} {cards[x]['Code']}"))
+
+    req = {'title': pollname, 'options': options}
+
+    response = requests.post(strawpoll_url, json.dumps(req))
+
+    response = json.loads(response.text)
+
+    return response
+
+
+

@@ -143,13 +143,22 @@ async def tiny(ctx, *, name: str):
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
-async def pack(ctx, opus):
+async def pack(ctx, opus, *args):
     """BETA - Returns a randomized pack based on the opus you provide.
 
     Example:
     ?pack 8
 
     """
+
+    mypoll = None
+    strawpoll = None
+
+    for arg in args:
+        if arg == '-sp':
+            strawpoll = True
+        else:
+            strawpoll = False
 
     my_uuid = uuid.uuid1().hex[:10]
     logging.info(str(ctx.prefix) + str(ctx.command) + ' ' + str(name) + ' - ID: ' + my_uuid)
@@ -165,6 +174,10 @@ async def pack(ctx, opus):
             output = output + prettyCode(x) + "\n"
 
     output = '```' + output + '```'
+
+    if strawpoll == True:
+        mypoll = createstrawpoll('Marcie Pack 1 Pick 1 Strawpoll', mycard)
+        output = output + f"\n<https://www.strawpoll.me/{mypoll['id']}>"
     await ctx.channel.send(output)
 
 
