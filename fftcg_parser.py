@@ -349,9 +349,13 @@ def getPack(opusnumber, cards):
 
         for x in range(0,12):
             if x <= 6:
-                pack.append(commons[random.randint(0,len(commons))])
+                randomindex = random.randint(0,len(commons))
+                pack.append(commons[randomindex])
+                commons.pop(randomindex)
             elif 7 <= x <= 9:
-                pack.append(rares[random.randint(0, len(rares))])
+                randomindex = random.randint(0, len(rares))
+                pack.append(rares[randomindex])
+                rares.pop(randomindex)
             elif x == 10:
                 pack.append(mycards[random.randint(0, len(mycards))])
             elif x == 11:
