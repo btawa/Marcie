@@ -375,11 +375,16 @@ def createstrawpoll(pollname, cards):
 
     req = {'title': pollname, 'options': options}
 
-    response = requests.post(strawpoll_url, json.dumps(req))
+    try:
+        response = requests.post(strawpoll_url, json.dumps(req))
+        response_json = json.loads(response.text)
+        requests.post(strawpoll_url, headers={'Connection':'close'})
+        return response_json
+    except:
+        print('Exception with strawpoll')
+        return
 
-    response = json.loads(response.text)
 
-    return response
 
 
 
