@@ -328,7 +328,7 @@ def getPack(opusnumber, cards):
         opus = roman.toRoman(int(opusnumber))
         opus = f'Opus {opus}'
     except:
-        return
+        return None
 
     try:
         for card in cards:
@@ -372,7 +372,7 @@ def getPack(opusnumber, cards):
         return pack
 
     except:
-        return
+        return None
 
 
 def createstrawpoll(pollname, cards):

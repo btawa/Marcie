@@ -151,8 +151,7 @@ async def pack(ctx, opus, *args):
 
     """
 
-    mypoll = None
-    strawpoll = None
+    strawpoll = False
 
     for arg in args:
         if arg == '-sp':
@@ -167,15 +166,15 @@ async def pack(ctx, opus, *args):
 
     output = ''
 
-    if mycard == None:
-        output = 'Invalid Opus'
+    if mycard is None:
+        output = 'Issue with pack command'
     else:
         for x in mycard:
             output = output + prettyCode(x) + "\n"
 
     output = '```' + output + '```'
 
-    if strawpoll == True:
+    if strawpoll is True:
         mypoll = createstrawpoll('Marcie Pack 1 Pick 1 Strawpoll', mycard)
         output = output + f"\n<https://www.strawpoll.me/{mypoll['id']}>"
     await ctx.channel.send(output)
