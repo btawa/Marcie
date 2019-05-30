@@ -141,7 +141,7 @@ async def tiny(ctx, *, name: str):
     await ctx.channel.send(output)
 
 
-@commands.cooldown(2, 10, type=commands.BucketType.user)
+#@commands.cooldown(2, 10, type=commands.BucketType.user)
 @bot.command()
 async def pack(ctx, opus, *args):
     """BETA - Returns a randomized pack based on the opus you provide.

@@ -355,23 +355,24 @@ def getPack(opusnumber, cards):
 
         for x in range(0,12):
             if x <= 6:
-                randomindex = random.randint(0,len(commons))
+                randomindex = random.randint(0,len(commons) - 1)
                 pack.append(commons[randomindex])
                 commons.pop(randomindex)
             elif 7 <= x <= 9:
-                randomindex = random.randint(0, len(rares))
+                randomindex = random.randint(0, len(rares) - 1)
                 pack.append(rares[randomindex])
                 rares.pop(randomindex)
             elif x == 10:
-                pack.append(mycards[random.randint(0, len(mycards))])
+                pack.append(mycards[random.randint(0, len(mycards) - 1)])
             elif x == 11:
                 if random.randint(1,10) <= 2:
-                    pack.append(legendaries[random.randint(0, len(legendaries))])
+                    pack.append(legendaries[random.randint(0, len(legendaries) - 1)])
                 else:
-                    pack.append(heroics[random.randint(0, len(heroics))])
+                    pack.append(heroics[random.randint(0, len(heroics) - 1)])
         return pack
 
-    except:
+    except Exception as e:
+        print(e)
         return None
 
 
