@@ -347,6 +347,12 @@ def getPack(opusnumber, cards):
             elif re.search(r'S', mycards[x]['Code']):
                 starters.append(mycards[x])
 
+        random.shuffle(heroics)
+        random.shuffle(commons)
+        random.shuffle(rares)
+        random.shuffle(legendaries)
+        random.shuffle(mycards)
+
         for x in range(0,12):
             if x <= 6:
                 randomindex = random.randint(0,len(commons))
