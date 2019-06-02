@@ -12,28 +12,16 @@ import json
 __author__ = "Japnix"
 
 
+# Enable logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+
+
 # Read in prefix from settings.json
 async def get_pre(bot, message):
     with open(os.path.dirname(__file__) + "/settings.json", 'r') as x:
         myfile = json.loads(x.read())
 
     return myfile[str(message.guild.id)]['prefix']
-
-# Enable logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-
-# For FFTCG Parser Commands
-fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
-cards = loadJson(fftcgURL)
-MAX_QUERY = 35
-embedcolor=0xd93fb6
-codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$')
-settingsjson = os.path.dirname(__file__) + "/settings.json"
-
-# Used to pass token as a variable when launching bot
-# Allows to not post sensitive data to github
-# python3 <marcie.py> 'token'
-mytoken = sys.argv[1]
 
 description = '''Marcie FFTCG Bot
 '''
@@ -124,7 +112,7 @@ async def tiny(ctx, *, name: str):
 
     output = ''
 
-    if mycard == []:
+    if not mycard:
         output = '```No Match```'
     else:
         if len(mycard) >= MAX_QUERY:
@@ -459,4 +447,18 @@ async def prefix(ctx, prefix):
     await ctx.channel.send(embed=embed)
 
 
+# For FFTCG Parser Commands
+fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
+cards = loadJson(fftcgURL)
+MAX_QUERY = 35
+embedcolor=0xd93fb6
+codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$')
+settingsjson = os.path.dirname(__file__) + "/settings.json"
+
+# Used to pass token as a variable when launching bot
+# Allows to not post sensitive data to github
+# python3 <marcie.py> 'token'
+mytoken = sys.argv[1]
+
 bot.run(mytoken)
+
