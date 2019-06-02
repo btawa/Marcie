@@ -43,7 +43,7 @@ bot = commands.Bot(command_prefix=get_pre, description=description)
 
 @bot.event
 async def on_guild_remove(ctx):
-    logging.info('Guild ' + ctx.name + ' removed ' + ctx.me.display_name + '.')
+    logging.info(f"Guild {ctx.name} removed {ctx.me.display_name}.")
     with open(settingsjson, 'r') as myfile:
         myjson = json.load(myfile)
 
@@ -61,7 +61,7 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_guild_join(ctx):
-    logging.info('Guild ' + ctx.name + ' added ' + ctx.me.display_name + '.')
+    logging.info(f"Guild {ctx.name} added {ctx.me.display_name}.")
     with open(settingsjson, 'r') as myfile:
         myjson = json.load(myfile)
 
@@ -118,7 +118,7 @@ async def tiny(ctx, *, name: str):
     """
 
     my_uuid = uuid.uuid1().hex[:10]
-    logging.info(str(ctx.prefix) + str(ctx.command) + ' ' + str(name) + ' - ID: ' + my_uuid)
+    logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
     mycard = grab_cards(name.lower(), cards)
 
@@ -146,6 +146,8 @@ async def tiny(ctx, *, name: str):
 async def pack(ctx, opus, *args):
     """BETA - Returns a randomized pack based on the opus you provide.
 
+    The -sp flag can be used to generate a strawpoll for pack 1 pick 1
+
     Example:
     ?pack 8
 
@@ -160,8 +162,7 @@ async def pack(ctx, opus, *args):
             strawpoll = False
 
     my_uuid = uuid.uuid1().hex[:10]
-    logging.info(str(ctx.prefix) + str(ctx.command) + ' ' + str(name) + ' - ID: ' + my_uuid)
-
+    logging.info(f"{ctx.message.content} - ID: {my_uuid}")
     mycard = getPack(opus, cards)
 
     output = ''
@@ -177,6 +178,7 @@ async def pack(ctx, opus, *args):
     if strawpoll is True:
         mypoll = createstrawpoll('Marcie Pack 1 Pick 1 Strawpoll', mycard)
         output = output + f"\n<https://www.strawpoll.me/{mypoll['id']}>"
+        logging.info(f"https://www.strawpoll.me/{mypoll['id']}")
     await ctx.channel.send(output)
 
 
@@ -205,7 +207,7 @@ async def name(ctx, *, name: str):
     """
 
     my_uuid = uuid.uuid1().hex[:10]
-    logging.info(str(ctx.prefix) + str(ctx.command) + ' ' + str(name) + ' - ID: ' + my_uuid)
+    logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
     if re.match(codevalidator, name):
 
@@ -283,7 +285,7 @@ async def name(ctx, *, name: str):
                     def check(msg):
                         if re.match(r'^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
                             if len(mycard) >= int(msg.content) >= 1:
-                                logging.info('Choice: ' + msg.content)
+                                logging.info(f"Choice: {msg.content}")
                                 return True
                         else:
                             return False
@@ -327,7 +329,7 @@ async def image(ctx, *, name: str):
     """
 
     my_uuid = uuid.uuid1().hex[:10]
-    logging.info(str(ctx.prefix) + str(ctx.command) + ' ' + str(name) + ' - ID: ' + my_uuid)
+    logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
     if re.match(codevalidator, name):
         mycard = grab_card(name.upper(), cards)
@@ -391,7 +393,7 @@ async def image(ctx, *, name: str):
                     def check(msg):
                         if re.match(r'^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
                             if len(mycard) >= int(msg.content) >= 1:
-                                logging.info('Choice: ' + msg.content)
+                                logging.info(f"Choice: {msg.content}")
                                 return True
                         else:
                             return False
@@ -443,7 +445,7 @@ async def prefix(ctx, prefix):
         myjson = json.load(myfile)
 
     if ctx.message.author.id == ctx.guild.owner.id or ctx.message.author.guild_permissions.administrator is True:
-        logging.info(ctx.guild.name + ' (' + str(ctx.guild.id) + ') ' + 'changed prefix to ' + prefix)
+        logging.info(f"{ctx.guild.name} ({ctx.guild.id}) changed prefix to {prefix}")
         myjson[str(ctx.guild.id)]['prefix'] = prefix
         embed = discord.Embed(title='Switched prefix to ' + str(prefix), color=embedcolor,
                               timestamp=datetime.datetime.utcnow())
