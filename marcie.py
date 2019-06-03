@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name
 # Read in prefix from settings.json
 async def get_pre(bot, message):
     with open(os.path.dirname(__file__) + "/settings.json", 'r') as x:
-        myfile = json.loads(x.read())
+        myfile = json.load(x)
 
     return myfile[str(message.guild.id)]['prefix']
 
@@ -71,15 +71,40 @@ async def on_ready():
     if os.path.isfile(os.path.dirname(__file__) + "/settings.json"):
         print('Loaded settings.json')
         with open(os.path.dirname(__file__) + "/settings.json", 'r') as myfile:
-            myfile = json.loads(myfile.read())
+            myjson = json.load(myfile)
+
+        itermyjson = myjson
+        marcieguilds = []
+        settingguilds = []
+
+        for guild in bot.guilds:
+            marcieguilds.append(guild.id)
+
+        for guild in myjson:
+            settingguilds.append(int(guild))
+
+        if len(itermyjson) > len(marcieguilds):
+            for guildid in list(settingguilds):
+                if int(guildid) not in marcieguilds:
+                    logging.info(f"Guild {str(myjson[str(guildid)]['name'])} ({guildid}) was removed while the bot was offline.  Removing from json.")
+                    del myjson[str(guildid)]
+
+        elif len(itermyjson) < len(marcieguilds):
+            for guildid in list(marcieguilds):
+                if int(guildid) not in settingguilds:
+                    guild2add = bot.get_guild(int(guildid))
+                    logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to json.")
+                    myjson[str(guildid)] = {'prefix': '?', 'name': guild2add.name}
+
+        with open(os.path.dirname(__file__) + '/settings.json', 'w') as myfile:
+            json.dump(myjson, myfile)
 
     else:
         print('Creating settings.json')
         myfile = open(os.path.dirname(__file__) + '/settings.json', 'w+')
         myjson = {}
         for x in bot.guilds:
-            myjson[str(x.id)] = {'prefix': '?'}
-
+            myjson[str(x.id)] = {'prefix': '?', 'name': str(x.name)}
         json.dump(myjson, myfile)
         myfile.close()
 
