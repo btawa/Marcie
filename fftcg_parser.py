@@ -120,21 +120,21 @@ def prettyCard(card):
         element = ''
 
     if card[u'Multicard'] == u"\u25cb":
-        multicard = '(Generic)'
+        multicard = f"\u00B7 (Generic)"
     else:
         multicard = ''
 
     #  Prepping different lines for return
-    line1 = card[u'Name_EN'] + " - " + element + " " + card[u'Cost'] + " - " + "(" + card[u'Code'] + ") " + multicard
-    line2 = card[u'Type_EN'] + " " + card[u'Job_EN'] + " " + card[u'Category_1']  # + " " + card[u'Category_2']
-    line3 = card[u'Text_EN']
-    line4 = card[u'Power']
+    line1 = f"{card[u'Name_EN']} \u00B7 {element} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
+    line2 = f"{card[u'Type_EN']} \u00B7 {card[u'Job_EN']} \u00B7 {card[u'Category_1']}"
+    line3 = f"{card[u'Text_EN']}"
+    line4 = f"{card[u'Power']}"
 
     # Modify return string based on whether card has power or not
     if card[u'Power'] == "":
-        finished_string = line1 + "\n" + line2 + "\n" + line3
+        finished_string = f"{line1}\n{line2}\n{line3}"
     else:
-        finished_string = line1 + "\n" + line2 + "\n" + line3 + "\n" + line4
+        finished_string = f"{line1}\n{line2}\n{line3}\n{line4}"
 
     # Replace EX Burst
     finished_string = finished_string.replace('[[ex]]', '')
