@@ -473,7 +473,7 @@ async def prefix(ctx, prefix):
 
 
 # For FFTCG Parser Commands
-fftcgURL = 'https://fftcg.square-enix-games.com/getcards'
+fftcgURL = 'https://fftcg.square-enix-games.com/en/get-cards'
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 embedcolor=0xd93fb6
