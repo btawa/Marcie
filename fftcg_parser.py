@@ -394,7 +394,3 @@ def createstrawpoll(pollname, cards):
         print('Exception with strawpoll')
         return
 
-
-
-
-
