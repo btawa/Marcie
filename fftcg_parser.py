@@ -125,7 +125,11 @@ def prettyCard(card):
 
     #  Prepping different lines for return
     line1 = f"{card[u'Name_EN']} \u00B7 {element} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
-    line2 = f"{card[u'Type_EN']} \u00B7 {card[u'Job_EN']} \u00B7 {card[u'Category_1']}"
+
+    if card[u'Type_NA'] == "Summon":
+        line2 = f"{card[u'Type_EN']} \u00B7 {card[u'Category_1']}"
+    else:
+        line2 = f"{card[u'Type_EN']} \u00B7 {card[u'Job_EN']} \u00B7 {card[u'Category_1']}"
     line3 = f"{card[u'Text_EN']}"
     line4 = f"{card[u'Power']}"
 
