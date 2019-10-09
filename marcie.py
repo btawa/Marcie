@@ -243,7 +243,7 @@ async def name(ctx, *, name: str):
                                   description=mycard_pretty.split('\n', 1)[1],
                                   color=embedcolor)
             embed.set_footer(text='ID: ' + my_uuid)
-            embed.set_thumbnail(url=getimageURL(mycard[u'Code']))
+            embed.set_thumbnail(url=mycard['image_url'])
             await ctx.channel.send(embed=embed)
 
     else:
@@ -269,7 +269,7 @@ async def name(ctx, *, name: str):
                                       timestamp=datetime.datetime.utcnow(),
                                       description=str(prettyCard(mycard[0]).split('\n', 1)[1]),
                                       color=embedcolor)
-                embed.set_thumbnail(url=getimageURL(mycard[0][u'Code']))
+                embed.set_thumbnail(url=mycard[0]['image_url'])
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
@@ -321,7 +321,7 @@ async def name(ctx, *, name: str):
                             timestamp=datetime.datetime.utcnow(),
                             description=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[1]),
                             color=embedcolor)
-                        embed.set_thumbnail(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
+                        embed.set_thumbnail(url=mycard[int(message.content) - 1]['image_url'])
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
 
@@ -353,9 +353,9 @@ async def image(ctx, *, name: str):
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
         else:
-            logging.info(getimageURL(mycard[u'Code']))
+            logging.info(mycard[u'image_url'])
             embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
-            embed.set_image(url=getimageURL(mycard[u'Code']))
+            embed.set_image(url=mycard[u'image_url'])
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
 
@@ -375,9 +375,9 @@ async def image(ctx, *, name: str):
                 await ctx.channel.send(embed=embed)
 
             elif len(mycard) == 1:
-                logging.info(getimageURL(mycard[0][u'Code']))
+                logging.info(mycard[0][u'image_url'])
                 embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
-                embed.set_image(url=getimageURL(mycard[0][u'Code']))
+                embed.set_image(url=mycard[0][u'image_url'])
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
@@ -425,7 +425,7 @@ async def image(ctx, *, name: str):
                     else:
                         logging.info(getimageURL(mycard[int(message.content) - 1][u'Code']))
                         embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
-                        embed.set_image(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
+                        embed.set_image(url=mycard[int(message.content) - 1][u'image_url'])
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
 
@@ -473,7 +473,11 @@ async def prefix(ctx, prefix):
 
 
 # For FFTCG Parser Commands
-fftcgURL = 'https://fftcg.square-enix-games.com/en/get-cards'
+
+with open('marcieapi.json', 'r') as infile:
+    keys = json.load(infile)
+
+fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={keys['API_KEY']}"
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 embedcolor=0xd93fb6
