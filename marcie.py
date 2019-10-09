@@ -474,7 +474,7 @@ async def prefix(ctx, prefix):
 
 # For FFTCG Parser Commands
 
-with open('marcieapi.json', 'r') as infile:
+with open(os.path.dirname(__file__) + '/marcieapi.json', 'r') as infile:
     keys = json.load(infile)
 
 fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={keys['API_KEY']}"
