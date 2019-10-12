@@ -219,23 +219,27 @@ async def name(ctx, *, name: str):
         ?name 1-001
     """
 
+    # This UUID is used to track requests in logs for recreation of potential issues
     my_uuid = uuid.uuid1().hex[:10]
     logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
-    if re.match(codevalidator, name):
+    if re.match(codevalidator, name):  # Checking to see if we match a code with regex
 
-        mycard = grab_card(name.upper(), cards)
+        mycard = grab_card(name.upper(), cards)  # Trying to grab that card
 
+        # If we return a card format its text into a pretty string
         if not mycard:
             mycard_pretty = None
         else:
             mycard_pretty = prettyCard(mycard)
 
+        # When we don't match return no match as embed
         if not mycard:
             logging.info('No Match')
             embed = discord.Embed(title='No Match', color=embedcolor, timestamp=datetime.datetime.utcnow())
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
+        # Print the card information as an embed
         else:
             logging.info('\n' + prettyCard(mycard))
             embed = discord.Embed(title=mycard_pretty.split('\n', 1)[0],
@@ -246,23 +250,30 @@ async def name(ctx, *, name: str):
             embed.set_thumbnail(url=mycard['image_url'])
             await ctx.channel.send(embed=embed)
 
+    # If we don't match a code, the we assume we are searching by name
     else:
-        mycard = grab_cards(name.lower(), cards)
+
+        mycard = grab_cards(name.lower(), cards)  # Grabbing our cards to parse
 
         output = ''
 
+        # When we don't match return no match as embed
         if not mycard:
             logging.info('No Match')
             embed = discord.Embed(title='No Match', color=embedcolor, timestamp=datetime.datetime.utcnow())
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
+
+        # When we do match
         else:
+            # If there are more than MAX_QUERY cards in the list return too many cards as an embed
             if len(mycard) >= MAX_QUERY:
                 embed = discord.Embed(title='Too many cards please be more specific', color=embedcolor,
                                       timestamp=datetime.datetime.utcnow())
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
+            # If there is only one match, return that card as an embed
             elif len(mycard) == 1:
                 logging.info('\n' + prettyCard(mycard[0]))
                 embed = discord.Embed(title=str(prettyCard(mycard[0]).split('\n', 1)[0]),
@@ -273,19 +284,26 @@ async def name(ctx, *, name: str):
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
+            # Else we have to parse through the cards and ask for user input
             else:
+
+                # Preparing our list of cards string to be sent.
                 for x in mycard:
                     if mycard.index(x) == 0:
                         output = str(mycard.index(x) + 1) + ".) " + prettyCode(x)
                     else:
                         output = output + "\n" + str(mycard.index(x) + 1) + ".) " + prettyCode(x)
 
+                # If output is more than 2000 characters (Discord Limit) than we send error embed
                 if len(output) >= 2000:
                     embed = discord.Embed(title='Too many characters please be more specific', color=embedcolor,
                                           timestamp=datetime.datetime.utcnow())
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
+
                 else:
+
+                    # Print list of cards as an embed
                     embed = discord.Embed(title='Please choose a card by typing its number',
                                           timestamp=datetime.datetime.utcnow(),
                                           description=output,
@@ -303,9 +321,12 @@ async def name(ctx, *, name: str):
                         else:
                             return False
 
+                    # This is where we wait for a message from the user who initiated the command
+                    # It will time out after 10 seconds.
                     try:
                         message = await bot.wait_for('message', check=check, timeout=10)
 
+                    # If we don't receive a message after 10 seconds we send a timeout embed
                     except:
                         logging.info('Command timed out')
                         embed = discord.Embed(title='Command timed out', color=embedcolor,
@@ -314,6 +335,8 @@ async def name(ctx, *, name: str):
                         await mymessage.edit(embed=embed)
                         return
 
+                    # Else we send the card at the requested index as an embed by editing the message that was initially
+                    # sent as a list of cards
                     else:
                         logging.info('\n' + prettyCard(mycard[int(message.content) - 1]))
                         embed = discord.Embed(
