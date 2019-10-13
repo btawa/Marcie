@@ -28,7 +28,7 @@ description = '''Marcie FFTCG Bot
 
 bot = commands.Bot(command_prefix=get_pre, description=description)
 
-
+# This function handles when the bot is removed from a guild under normal operation
 @bot.event
 async def on_guild_remove(ctx):
     logging.info(f"Guild {ctx.name} removed {ctx.me.display_name}.")
@@ -40,21 +40,25 @@ async def on_guild_remove(ctx):
     with open(settingsjson, 'w+') as myfile:
         json.dump(myjson, myfile)
 
-
+# This function handles when we try to trigger a command with our prefix that doesn't exist
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         logging.info(str(error))
 
-
+# This function handles when the bot is added to a build
 @bot.event
 async def on_guild_join(ctx):
     logging.info(f"Guild {ctx.name} added {ctx.me.display_name}.")
+
+    # We read in the JSON to load it into a varible
     with open(settingsjson, 'r') as myfile:
         myjson = json.load(myfile)
 
+    # We add the guild and default settings to our variable
     myjson[str(ctx.id)] = {'prefix': '?', 'name': str(ctx.name)}
 
+    # We write our changes to a file for future use
     with open(settingsjson, 'w+') as myfile:
         json.dump(myjson, myfile)
 
@@ -68,6 +72,7 @@ async def on_ready():
     print('Guilds Added: ' + str(len(bot.guilds)))
     print('------')
 
+    # We read in settings.json if it exists
     if os.path.isfile(os.path.dirname(__file__) + "/settings.json"):
         print('Loaded settings.json')
         with open(os.path.dirname(__file__) + "/settings.json", 'r') as myfile:
@@ -83,12 +88,16 @@ async def on_ready():
         for guild in myjson:
             settingguilds.append(int(guild))
 
+        # If when we start the bot there are more guilds in settings.json then the bot see's as joined
+        # we remove those bots from settings.json
         if len(itermyjson) > len(marcieguilds):
             for guildid in list(settingguilds):
                 if int(guildid) not in marcieguilds:
                     logging.info(f"Guild {str(myjson[str(guildid)]['name'])} ({guildid}) was removed while the bot was offline.  Removing from json.")
                     del myjson[str(guildid)]
 
+        # Else if the bot see's more guilds than what is present in settings.json we add the missing guilds with default
+        # settings
         elif len(itermyjson) < len(marcieguilds):
             for guildid in list(marcieguilds):
                 if int(guildid) not in settingguilds:
@@ -96,9 +105,11 @@ async def on_ready():
                     logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to json.")
                     myjson[str(guildid)] = {'prefix': '?', 'name': guild2add.name}
 
+        # Then we write our changes to settings.json
         with open(os.path.dirname(__file__) + '/settings.json', 'w') as myfile:
             json.dump(myjson, myfile)
 
+    # If the settings.json file does not exist, then we create it for all guilds the bot see's with default settings
     else:
         print('Creating settings.json')
         myfile = open(os.path.dirname(__file__) + '/settings.json', 'w+')
