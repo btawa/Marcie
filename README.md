@@ -28,6 +28,7 @@ Ensure that your bot has the ability to `Read Text Channels & See Voice Channels
   image Returns image of card. Takes code or name.  Accepts regex.
   name  Returns text of card. Takes code or name.  Accepts regex.
   tiny  List cards that match the search. Accepts regex. 
+  prefix Changes the prefix used to trigger bot commands
 ```
 ___
 

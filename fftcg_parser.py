@@ -131,6 +131,8 @@ def getImage(code):
 
 
 def getimageURL(code):
+    """This function takes in a code as a string and returns an image link which points to square"""
+
     if re.search(r'[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
         URL = 'https://fftcg.cdn.sewest.net/images/cards/full/' + code[-6:] + '_eg.jpg'
     else:
@@ -139,9 +141,9 @@ def getimageURL(code):
     return URL
 
 
-# Takes in a list of dicts (cards) and returns a list of url's from square.
-
 def urlset(cards_list):
+    """This function takes in list of cards and creates a list of URL's and returns it as a list"""
+
     url_list = []
     for card in cards_list:
         if re.search(r'\/', card['Code']):
