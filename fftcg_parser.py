@@ -108,6 +108,11 @@ def prettyCard(card):
     else:
         finished_string = f"{line1}\n{line2}\n{line3}{line4}"
 
+    # Fixes #16, this is needed because markup converts []() to links
+    # This causes issue with outputting to discord via embed
+    finished_string = finished_string.replace('[', '\[')
+    finished_string = finished_string.replace(']', '\]')
+
     return finished_string
 
 
