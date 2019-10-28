@@ -12,6 +12,8 @@ Marcie is a discord bot designed to provide discord users access to query for FF
 - Rapptz/discord.py
 - Python 3.7
 - Configured application in discord developer portal
+- MarcieAPI
+    + If you need access to this please reach out to Japnix in the support discord
 
 ## Installation
 ```
@@ -28,6 +30,7 @@ Ensure that your bot has the ability to `Read Text Channels & See Voice Channels
   image Returns image of card. Takes code or name.  Accepts regex.
   name  Returns text of card. Takes code or name.  Accepts regex.
   tiny  List cards that match the search. Accepts regex. 
+  prefix Changes the prefix used to trigger bot commands
 ```
 ___
 
@@ -102,4 +105,12 @@ Example:
     Then...
     
     z!name WOL
+```
+
+### ?pack <number>
+```
+This command returns a randomized pack of the requested FFTCG set.
+
+Example:
+    ?pack 5
 ```

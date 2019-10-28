@@ -28,7 +28,7 @@ description = '''Marcie FFTCG Bot
 
 bot = commands.Bot(command_prefix=get_pre, description=description)
 
-
+# This function handles when the bot is removed from a guild under normal operation
 @bot.event
 async def on_guild_remove(ctx):
     logging.info(f"Guild {ctx.name} removed {ctx.me.display_name}.")
@@ -40,21 +40,25 @@ async def on_guild_remove(ctx):
     with open(settingsjson, 'w+') as myfile:
         json.dump(myjson, myfile)
 
-
+# This function handles when we try to trigger a command with our prefix that doesn't exist
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         logging.info(str(error))
 
-
+# This function handles when the bot is added to a build
 @bot.event
 async def on_guild_join(ctx):
     logging.info(f"Guild {ctx.name} added {ctx.me.display_name}.")
+
+    # We read in the JSON to load it into a varible
     with open(settingsjson, 'r') as myfile:
         myjson = json.load(myfile)
 
+    # We add the guild and default settings to our variable
     myjson[str(ctx.id)] = {'prefix': '?', 'name': str(ctx.name)}
 
+    # We write our changes to a file for future use
     with open(settingsjson, 'w+') as myfile:
         json.dump(myjson, myfile)
 
@@ -68,6 +72,7 @@ async def on_ready():
     print('Guilds Added: ' + str(len(bot.guilds)))
     print('------')
 
+    # We read in settings.json if it exists
     if os.path.isfile(os.path.dirname(__file__) + "/settings.json"):
         print('Loaded settings.json')
         with open(os.path.dirname(__file__) + "/settings.json", 'r') as myfile:
@@ -83,12 +88,16 @@ async def on_ready():
         for guild in myjson:
             settingguilds.append(int(guild))
 
+        # If when we start the bot there are more guilds in settings.json then the bot see's as joined
+        # we remove those bots from settings.json
         if len(itermyjson) > len(marcieguilds):
             for guildid in list(settingguilds):
                 if int(guildid) not in marcieguilds:
                     logging.info(f"Guild {str(myjson[str(guildid)]['name'])} ({guildid}) was removed while the bot was offline.  Removing from json.")
                     del myjson[str(guildid)]
 
+        # Else if the bot see's more guilds than what is present in settings.json we add the missing guilds with default
+        # settings
         elif len(itermyjson) < len(marcieguilds):
             for guildid in list(marcieguilds):
                 if int(guildid) not in settingguilds:
@@ -96,9 +105,11 @@ async def on_ready():
                     logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to json.")
                     myjson[str(guildid)] = {'prefix': '?', 'name': guild2add.name}
 
+        # Then we write our changes to settings.json
         with open(os.path.dirname(__file__) + '/settings.json', 'w') as myfile:
             json.dump(myjson, myfile)
 
+    # If the settings.json file does not exist, then we create it for all guilds the bot see's with default settings
     else:
         print('Creating settings.json')
         myfile = open(os.path.dirname(__file__) + '/settings.json', 'w+')
@@ -219,23 +230,27 @@ async def name(ctx, *, name: str):
         ?name 1-001
     """
 
+    # This UUID is used to track requests in logs for recreation of potential issues
     my_uuid = uuid.uuid1().hex[:10]
     logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
-    if re.match(codevalidator, name):
+    if re.match(codevalidator, name):  # Checking to see if we match a code with regex
 
-        mycard = grab_card(name.upper(), cards)
+        mycard = grab_card(name.upper(), cards)  # Trying to grab that card
 
+        # If we return a card format its text into a pretty string
         if not mycard:
             mycard_pretty = None
         else:
             mycard_pretty = prettyCard(mycard)
 
+        # When we don't match return no match as embed
         if not mycard:
             logging.info('No Match')
             embed = discord.Embed(title='No Match', color=embedcolor, timestamp=datetime.datetime.utcnow())
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
+        # Print the card information as an embed
         else:
             logging.info('\n' + prettyCard(mycard))
             embed = discord.Embed(title=mycard_pretty.split('\n', 1)[0],
@@ -243,49 +258,63 @@ async def name(ctx, *, name: str):
                                   description=mycard_pretty.split('\n', 1)[1],
                                   color=embedcolor)
             embed.set_footer(text='ID: ' + my_uuid)
-            embed.set_thumbnail(url=getimageURL(mycard[u'Code']))
+            embed.set_thumbnail(url=mycard['image_url'])
             await ctx.channel.send(embed=embed)
 
+    # If we don't match a code, the we assume we are searching by name
     else:
-        mycard = grab_cards(name.lower(), cards)
+
+        mycard = grab_cards(name.lower(), cards)  # Grabbing our cards to parse
 
         output = ''
 
+        # When we don't match return no match as embed
         if not mycard:
             logging.info('No Match')
             embed = discord.Embed(title='No Match', color=embedcolor, timestamp=datetime.datetime.utcnow())
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
+
+        # When we do match
         else:
+            # If there are more than MAX_QUERY cards in the list return too many cards as an embed
             if len(mycard) >= MAX_QUERY:
                 embed = discord.Embed(title='Too many cards please be more specific', color=embedcolor,
                                       timestamp=datetime.datetime.utcnow())
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
+            # If there is only one match, return that card as an embed
             elif len(mycard) == 1:
                 logging.info('\n' + prettyCard(mycard[0]))
                 embed = discord.Embed(title=str(prettyCard(mycard[0]).split('\n', 1)[0]),
                                       timestamp=datetime.datetime.utcnow(),
                                       description=str(prettyCard(mycard[0]).split('\n', 1)[1]),
                                       color=embedcolor)
-                embed.set_thumbnail(url=getimageURL(mycard[0][u'Code']))
+                embed.set_thumbnail(url=mycard[0]['image_url'])
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
+            # Else we have to parse through the cards and ask for user input
             else:
+
+                # Preparing our list of cards string to be sent.
                 for x in mycard:
                     if mycard.index(x) == 0:
                         output = str(mycard.index(x) + 1) + ".) " + prettyCode(x)
                     else:
                         output = output + "\n" + str(mycard.index(x) + 1) + ".) " + prettyCode(x)
 
+                # If output is more than 2000 characters (Discord Limit) than we send error embed
                 if len(output) >= 2000:
                     embed = discord.Embed(title='Too many characters please be more specific', color=embedcolor,
                                           timestamp=datetime.datetime.utcnow())
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
+
                 else:
+
+                    # Print list of cards as an embed
                     embed = discord.Embed(title='Please choose a card by typing its number',
                                           timestamp=datetime.datetime.utcnow(),
                                           description=output,
@@ -303,9 +332,12 @@ async def name(ctx, *, name: str):
                         else:
                             return False
 
+                    # This is where we wait for a message from the user who initiated the command
+                    # It will time out after 10 seconds.
                     try:
                         message = await bot.wait_for('message', check=check, timeout=10)
 
+                    # If we don't receive a message after 10 seconds we send a timeout embed
                     except:
                         logging.info('Command timed out')
                         embed = discord.Embed(title='Command timed out', color=embedcolor,
@@ -314,6 +346,8 @@ async def name(ctx, *, name: str):
                         await mymessage.edit(embed=embed)
                         return
 
+                    # Else we send the card at the requested index as an embed by editing the message that was initially
+                    # sent as a list of cards
                     else:
                         logging.info('\n' + prettyCard(mycard[int(message.content) - 1]))
                         embed = discord.Embed(
@@ -321,7 +355,7 @@ async def name(ctx, *, name: str):
                             timestamp=datetime.datetime.utcnow(),
                             description=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[1]),
                             color=embedcolor)
-                        embed.set_thumbnail(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
+                        embed.set_thumbnail(url=mycard[int(message.content) - 1]['image_url'])
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
 
@@ -353,9 +387,9 @@ async def image(ctx, *, name: str):
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
         else:
-            logging.info(getimageURL(mycard[u'Code']))
+            logging.info(mycard[u'image_url'])
             embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
-            embed.set_image(url=getimageURL(mycard[u'Code']))
+            embed.set_image(url=mycard[u'image_url'])
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
 
@@ -375,9 +409,9 @@ async def image(ctx, *, name: str):
                 await ctx.channel.send(embed=embed)
 
             elif len(mycard) == 1:
-                logging.info(getimageURL(mycard[0][u'Code']))
+                logging.info(mycard[0][u'image_url'])
                 embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
-                embed.set_image(url=getimageURL(mycard[0][u'Code']))
+                embed.set_image(url=mycard[0][u'image_url'])
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
@@ -425,7 +459,7 @@ async def image(ctx, *, name: str):
                     else:
                         logging.info(getimageURL(mycard[int(message.content) - 1][u'Code']))
                         embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
-                        embed.set_image(url=getimageURL(mycard[int(message.content) - 1][u'Code']))
+                        embed.set_image(url=mycard[int(message.content) - 1][u'image_url'])
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
 
@@ -473,7 +507,11 @@ async def prefix(ctx, prefix):
 
 
 # For FFTCG Parser Commands
-fftcgURL = 'https://fftcg.square-enix-games.com/en/get-cards'
+
+with open(os.path.dirname(__file__) + '/marcieapi.json', 'r') as infile:
+    keys = json.load(infile)
+
+fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={keys['API_KEY']}"
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 embedcolor=0xd93fb6
