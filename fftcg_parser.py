@@ -240,6 +240,8 @@ def prettyTrice(string):
     string = string.replace(u"\uFF18", '8')
     string = string.replace(u"\uFF19", '9')
     string = string.replace(u"\uFF10", '0')
+    string = string.replace(u"\u2015", "-") # Damage 5 from Opus X cards
+    string = string.replace(u"\u00fa", "u")  # Cuchulainn u with tilda
 
     string = string.replace(u"\u4E00"u"\u822C", 'Generic')  # Fixes #1
 
@@ -363,6 +365,8 @@ def ffdeckstostring(string):
     string = string.replace('*', '')
     string = string.replace('%', '')
     string = string.replace('~', '')
+    string = string.replace(u"\u2015", "-") # Damage 5 from Opus X cards
+    string = string.replace(u"\u00fa", "u")  # Cuchulainn u with tilda
 
     return string
 
