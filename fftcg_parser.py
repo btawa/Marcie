@@ -5,6 +5,7 @@ import io
 import roman
 import random
 import requests
+import time
 
 # Helpful jq
 #
@@ -69,6 +70,8 @@ def prettyCode(card):
 
     if card['Rarity'] == "P":
         line1 = f"{card['Code']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
+    elif re.search(r'\/', card['Code']):
+        line1 = f"{card['Code']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
     else:
         line1 = f"{card['Code']}{card['Rarity']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
     return line1
@@ -87,6 +90,8 @@ def prettyCard(card):
 
     #  Prepping different lines for return
     if card['Rarity'] == "P":
+        line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
+    elif re.search(r'\/', card['Code']):
         line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
     else:
         line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}{card[u'Rarity']}) {multicard}"
@@ -154,13 +159,13 @@ def urlset(cards_list):
         if re.search(r'\/', card['Code']):
             for x in card['Code'].split('/'):
                 if re.search(r'H|R|P|C|L', x):
-                    url_list.append('https://storage.googleapis.com/marceapi-images/' + x + '_eg.jpg')
+                    url_list.append('https://storage.googleapis.com/marcieapi-images/' + x + '_eg.jpg?' + str(int(time.time())))
                 else:
-                    url_list.append('https://storage.googleapis.com/marceapi-images/' + x + card['Rarity'] + '_eg.jpg')
+                    url_list.append('https://storage.googleapis.com/marcieapi-images/' + x + card['Rarity'] + '_eg.jpg?' + str(int(time.time())))
         elif card['Rarity'] == "P":
-            url_list.append('https://storage.googleapis.com/marceapi-images/' + card['Code'] + '_eg.jpg')
+            url_list.append('https://storage.googleapis.com/marcieapi-images/' + card['Code'] + '_eg.jpg?' + str(int(time.time())))
         else:
-            url_list.append('https://storage.googleapis.com/marceapi-images/' + card['Code'] + card['Rarity'] + '_eg.jpg')
+            url_list.append('https://storage.googleapis.com/marcieapi-images/' + card['Code'] + card['Rarity'] + '_eg.jpg?' + str(int(time.time())))
 
     return list(dict.fromkeys(url_list))
 
@@ -411,7 +416,11 @@ def ffdeckstomarcieapi(listofdicts):
 def addimageurltojson(cards_list, image_list):
     for card in cards_list:
         for url in image_list:
-            if card['Code'] in url:
+            if re.search(r'\/', card['Code']):
+                if card['Code'].split('/')[0] in url:
+                    card['image_url'] = url
+
+            elif card['Code'] in url:
                 card['image_url'] = url
 
     return cards_list

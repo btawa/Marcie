@@ -161,7 +161,6 @@ async def tiny(ctx, *, name: str):
             output = '```Too many characters for discord, please be more specific````'
         else:
             output = '```' + output + '```'
-
     await ctx.channel.send(output)
 
 
@@ -515,7 +514,7 @@ fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={keys['API_KEY']}"
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 embedcolor=0xd93fb6
-codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$')
+codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
 settingsjson = os.path.dirname(__file__) + "/settings.json"
 
 # Used to pass token as a variable when launching bot
