@@ -26,7 +26,7 @@ def grab_card(req, cards):
     our_card = ''
 
     try:
-        req = re.compile(req)
+        req = re.compile('^'+req)
     except:
         return our_card
     else:
