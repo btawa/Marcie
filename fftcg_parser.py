@@ -420,7 +420,7 @@ def addimageurltojson(cards_list, image_list):
                 if card['Code'].split('/')[0] in url:
                     card['image_url'] = url
 
-            elif card['Code'] in url:
+            elif card['Code'] == re.search(r'(PR-\d{3}|\d+-\d{3})', url).group(1):
                 card['image_url'] = url
 
     return cards_list
