@@ -15,7 +15,7 @@ __author__ = "Japnix"
 # MongoDB Client
 MONGODB = "mongodb://127.0.0.1:27017"
 MYCLIENT = pymongo.MongoClient(MONGODB)
-MYDB = MYCLIENT['Marcie']
+MYDB = MYCLIENT['MarcieProd']
 
 # Enable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
@@ -28,6 +28,7 @@ async def get_pre(bot, message):
     prefix = dbq['prefix']
 
     return prefix
+
 
 description = '''Marcie FFTCG Bot
 '''
@@ -436,6 +437,7 @@ async def image(ctx, *, name: str):
                         embed.set_image(url=mycard[int(message.content) - 1][u'image_url'])
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
+
 
 @pack.error
 @name.error
