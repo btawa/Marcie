@@ -8,9 +8,14 @@ import logging
 import uuid
 import os
 import json
+import pymongo
 
 __author__ = "Japnix"
 
+# MongoDB Client
+MONGODB = "mongodb://127.0.0.1:27017"
+MYCLIENT = pymongo.MongoClient(MONGODB)
+MYDB = MYCLIENT['MarcieProd']
 
 # Enable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
@@ -18,27 +23,25 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name
 
 # Read in prefix from settings.json
 async def get_pre(bot, message):
-    with open(os.path.dirname(__file__) + "/settings.json", 'r') as x:
-        myfile = json.load(x)
+    mycol = MYDB['settings']
+    dbq = mycol.find_one({'guildid': message.guild.id})
+    prefix = dbq['prefix']
 
-    return myfile[str(message.guild.id)]['prefix']
+    return prefix
+
 
 description = '''Marcie FFTCG Bot
 '''
 
 bot = commands.Bot(command_prefix=get_pre, description=description)
 
+
 # This function handles when the bot is removed from a guild under normal operation
 @bot.event
 async def on_guild_remove(ctx):
-    logging.info(f"Guild {ctx.name} removed {ctx.me.display_name}.")
-    with open(settingsjson, 'r') as myfile:
-        myjson = json.load(myfile)
+    mycol = MYDB['settings']
+    mycol.delete_one({'guildid': ctx.id})
 
-    del myjson[str(ctx.id)]
-
-    with open(settingsjson, 'w+') as myfile:
-        json.dump(myjson, myfile)
 
 # This function handles when we try to trigger a command with our prefix that doesn't exist
 @bot.event
@@ -46,21 +49,14 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         logging.info(str(error))
 
+
 # This function handles when the bot is added to a build
 @bot.event
 async def on_guild_join(ctx):
-    logging.info(f"Guild {ctx.name} added {ctx.me.display_name}.")
-
-    # We read in the JSON to load it into a varible
-    with open(settingsjson, 'r') as myfile:
-        myjson = json.load(myfile)
-
-    # We add the guild and default settings to our variable
-    myjson[str(ctx.id)] = {'prefix': '?', 'name': str(ctx.name)}
-
-    # We write our changes to a file for future use
-    with open(settingsjson, 'w+') as myfile:
-        json.dump(myjson, myfile)
+    mycol = MYDB['settings']
+    mycol.find_one_and_update({'guildid': ctx.id},
+                              {'$set': {'guildid': ctx.id, 'prefix': '?', 'name': ctx.name}},
+                              upsert=True)
 
 
 @bot.event
@@ -72,52 +68,32 @@ async def on_ready():
     print('Guilds Added: ' + str(len(bot.guilds)))
     print('------')
 
-    # We read in settings.json if it exists
-    if os.path.isfile(os.path.dirname(__file__) + "/settings.json"):
-        print('Loaded settings.json')
-        with open(os.path.dirname(__file__) + "/settings.json", 'r') as myfile:
-            myjson = json.load(myfile)
+    mycol = MYDB['settings']
+    dbq = mycol.find()
 
-        itermyjson = myjson
-        marcieguilds = []
-        settingguilds = []
+    dbguilds = [doc['guildid'] for doc in dbq]
+    botguilds = [guild.id for guild in bot.guilds]
 
-        for guild in bot.guilds:
-            marcieguilds.append(guild.id)
 
-        for guild in myjson:
-            settingguilds.append(int(guild))
+    # If when we start the bot there are more guilds in settings.json then the bot see's as joined
+    # we remove those bots from settings.json
+    if len(dbguilds) > len(botguilds):
+        for guildid in dbguilds:
+            if guildid not in botguilds:
+                dbq = mycol.find_one({"guildid": guildid})
+                logging.info(f"Guild {dbq['name']} ({guildid}) was removed while the bot was offline.  Removing from db.")
+                mycol.delete_one({'guildid': guildid})
 
-        # If when we start the bot there are more guilds in settings.json then the bot see's as joined
-        # we remove those bots from settings.json
-        if len(itermyjson) > len(marcieguilds):
-            for guildid in list(settingguilds):
-                if int(guildid) not in marcieguilds:
-                    logging.info(f"Guild {str(myjson[str(guildid)]['name'])} ({guildid}) was removed while the bot was offline.  Removing from json.")
-                    del myjson[str(guildid)]
-
-        # Else if the bot see's more guilds than what is present in settings.json we add the missing guilds with default
-        # settings
-        elif len(itermyjson) < len(marcieguilds):
-            for guildid in list(marcieguilds):
-                if int(guildid) not in settingguilds:
-                    guild2add = bot.get_guild(int(guildid))
-                    logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to json.")
-                    myjson[str(guildid)] = {'prefix': '?', 'name': guild2add.name}
-
-        # Then we write our changes to settings.json
-        with open(os.path.dirname(__file__) + '/settings.json', 'w') as myfile:
-            json.dump(myjson, myfile)
-
-    # If the settings.json file does not exist, then we create it for all guilds the bot see's with default settings
-    else:
-        print('Creating settings.json')
-        myfile = open(os.path.dirname(__file__) + '/settings.json', 'w+')
-        myjson = {}
-        for x in bot.guilds:
-            myjson[str(x.id)] = {'prefix': '?', 'name': str(x.name)}
-        json.dump(myjson, myfile)
-        myfile.close()
+    # Else if the bot see's more guilds than what is present in settings.json we add the missing guilds with default
+    # settings
+    elif len(dbguilds) < len(botguilds):
+        for guildid in botguilds:
+            if guildid not in dbguilds:
+                guild2add = bot.get_guild(guildid)
+                logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to db.")
+                mycol.find_one_and_update({'guildid': guild2add.id},
+                                          {'$set': {'guildid': guild2add.id, 'prefix': '?', 'name': guild2add.name}},
+                                          upsert=True)
 
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
@@ -233,7 +209,7 @@ async def name(ctx, *, name: str):
     my_uuid = uuid.uuid1().hex[:10]
     logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
-    if re.match(codevalidator, name):  # Checking to see if we match a code with regex
+    if re.match(CODEVALIDATOR, name):  # Checking to see if we match a code with regex
 
         mycard = grab_card(name.upper(), cards)  # Trying to grab that card
 
@@ -246,7 +222,7 @@ async def name(ctx, *, name: str):
         # When we don't match return no match as embed
         if not mycard:
             logging.info('No Match')
-            embed = discord.Embed(title='No Match', color=embedcolor, timestamp=datetime.datetime.utcnow())
+            embed = discord.Embed(title='No Match', color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
         # Print the card information as an embed
@@ -255,7 +231,7 @@ async def name(ctx, *, name: str):
             embed = discord.Embed(title=mycard_pretty.split('\n', 1)[0],
                                   timestamp=datetime.datetime.utcnow(),
                                   description=mycard_pretty.split('\n', 1)[1],
-                                  color=embedcolor)
+                                  color=EMBEDCOLOR)
             embed.set_footer(text='ID: ' + my_uuid)
             embed.set_thumbnail(url=mycard['image_url'])
             await ctx.channel.send(embed=embed)
@@ -270,7 +246,7 @@ async def name(ctx, *, name: str):
         # When we don't match return no match as embed
         if not mycard:
             logging.info('No Match')
-            embed = discord.Embed(title='No Match', color=embedcolor, timestamp=datetime.datetime.utcnow())
+            embed = discord.Embed(title='No Match', color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
 
@@ -278,7 +254,7 @@ async def name(ctx, *, name: str):
         else:
             # If there are more than MAX_QUERY cards in the list return too many cards as an embed
             if len(mycard) >= MAX_QUERY:
-                embed = discord.Embed(title='Too many cards please be more specific', color=embedcolor,
+                embed = discord.Embed(title='Too many cards please be more specific', color=EMBEDCOLOR,
                                       timestamp=datetime.datetime.utcnow())
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
@@ -289,7 +265,7 @@ async def name(ctx, *, name: str):
                 embed = discord.Embed(title=str(prettyCard(mycard[0]).split('\n', 1)[0]),
                                       timestamp=datetime.datetime.utcnow(),
                                       description=str(prettyCard(mycard[0]).split('\n', 1)[1]),
-                                      color=embedcolor)
+                                      color=EMBEDCOLOR)
                 embed.set_thumbnail(url=mycard[0]['image_url'])
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
@@ -306,7 +282,7 @@ async def name(ctx, *, name: str):
 
                 # If output is more than 2000 characters (Discord Limit) than we send error embed
                 if len(output) >= 2000:
-                    embed = discord.Embed(title='Too many characters please be more specific', color=embedcolor,
+                    embed = discord.Embed(title='Too many characters please be more specific', color=EMBEDCOLOR,
                                           timestamp=datetime.datetime.utcnow())
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
@@ -317,7 +293,7 @@ async def name(ctx, *, name: str):
                     embed = discord.Embed(title='Please choose a card by typing its number',
                                           timestamp=datetime.datetime.utcnow(),
                                           description=output,
-                                          color=embedcolor)
+                                          color=EMBEDCOLOR)
                     embed.set_footer(text='ID: ' + my_uuid)
                     mymessage = await ctx.channel.send(embed=embed)
 
@@ -339,7 +315,7 @@ async def name(ctx, *, name: str):
                     # If we don't receive a message after 10 seconds we send a timeout embed
                     except:
                         logging.info('Command timed out')
-                        embed = discord.Embed(title='Command timed out', color=embedcolor,
+                        embed = discord.Embed(title='Command timed out', color=EMBEDCOLOR,
                                               timestamp=datetime.datetime.utcnow())
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
@@ -353,7 +329,7 @@ async def name(ctx, *, name: str):
                             title=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[0]),
                             timestamp=datetime.datetime.utcnow(),
                             description=str(prettyCard(mycard[int(message.content) - 1]).split('\n', 1)[1]),
-                            color=embedcolor)
+                            color=EMBEDCOLOR)
                         embed.set_thumbnail(url=mycard[int(message.content) - 1]['image_url'])
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
@@ -377,17 +353,17 @@ async def image(ctx, *, name: str):
     my_uuid = uuid.uuid1().hex[:10]
     logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
-    if re.match(codevalidator, name):
+    if re.match(CODEVALIDATOR, name):
         mycard = grab_card(name.upper(), cards)
 
         if not mycard:
             logging.info('No Match')
-            embed = discord.Embed(title='No Match', color=embedcolor, timestamp=datetime.datetime.utcnow())
+            embed = discord.Embed(title='No Match', color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
         else:
             logging.info(mycard[u'image_url'])
-            embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
+            embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
             embed.set_image(url=mycard[u'image_url'])
             embed.set_footer(text='ID: ' + my_uuid)
             await ctx.channel.send(embed=embed)
@@ -399,17 +375,17 @@ async def image(ctx, *, name: str):
 
         if not mycard:
             logging.info('No Match')
-            await ctx.channel.send(embed=discord.Embed(title='No Match', color=embedcolor))
+            await ctx.channel.send(embed=discord.Embed(title='No Match', color=EMBEDCOLOR))
         else:
             if len(mycard) >= MAX_QUERY:
-                embed = discord.Embed(title='Too many cards please be more specific', color=embedcolor,
+                embed = discord.Embed(title='Too many cards please be more specific', color=EMBEDCOLOR,
                                       timestamp=datetime.datetime.utcnow())
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
             elif len(mycard) == 1:
                 logging.info(mycard[0][u'image_url'])
-                embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
+                embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
                 embed.set_image(url=mycard[0][u'image_url'])
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
@@ -422,7 +398,7 @@ async def image(ctx, *, name: str):
                         output = output + "\n" + str(mycard.index(x) + 1) + ".) " + prettyCode(x)
 
                 if len(output) >= 2000:
-                    embed = discord.Embed(title='Too many characters please be more specific', color=embedcolor,
+                    embed = discord.Embed(title='Too many characters please be more specific', color=EMBEDCOLOR,
                                           timestamp=datetime.datetime.utcnow())
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
@@ -430,7 +406,7 @@ async def image(ctx, *, name: str):
                     embed = discord.Embed(title='Please choose a card by typing its number',
                                           timestamp=datetime.datetime.utcnow(),
                                           description=output,
-                                          color=embedcolor)
+                                          color=EMBEDCOLOR)
                     embed.set_footer(text='ID: ' + my_uuid)
                     mymessage = await ctx.channel.send(embed=embed)
 
@@ -449,7 +425,7 @@ async def image(ctx, *, name: str):
 
                     except:
                         logging.info('Command timed out')
-                        embed = discord.Embed(title='Command timed out', color=embedcolor,
+                        embed = discord.Embed(title='Command timed out', color=EMBEDCOLOR,
                                               timestamp=datetime.datetime.utcnow())
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
@@ -457,10 +433,11 @@ async def image(ctx, *, name: str):
 
                     else:
                         logging.info(getimageURL(mycard[int(message.content) - 1][u'Code']))
-                        embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=embedcolor)
+                        embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
                         embed.set_image(url=mycard[int(message.content) - 1][u'image_url'])
                         embed.set_footer(text='ID: ' + my_uuid)
                         await mymessage.edit(embed=embed)
+
 
 @pack.error
 @name.error
@@ -470,7 +447,7 @@ async def cooldown_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.channel.send(embed=discord.Embed(
             description='Command is on cooldown for ' + ctx.author.display_name,
-            color=embedcolor))
+            color=EMBEDCOLOR))
 
 
 @bot.command()
@@ -487,20 +464,18 @@ async def prefix(ctx, prefix):
         z!name WOL
     """
 
-    with open(settingsjson, 'r') as myfile:
-        myjson = json.load(myfile)
+    mycol = MYDB['settings']
 
     if ctx.message.author.id == ctx.guild.owner.id or ctx.message.author.guild_permissions.administrator is True:
-        logging.info(f"{ctx.guild.name} ({ctx.guild.id}) changed prefix to {prefix}")
-        myjson[str(ctx.guild.id)]['prefix'] = prefix
-        embed = discord.Embed(title='Switched prefix to ' + str(prefix), color=embedcolor,
+        logging.info(ctx.guild.name + ' (' + str(ctx.guild.id) + ') ' + 'changed prefix to ' + prefix)
+
+        mycol.find_one_and_update({'guildid': ctx.guild.id}, {'$set': {'prefix': prefix}})
+
+        embed = discord.Embed(title='Switched prefix to ' + str(prefix), color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
 
-        with open(settingsjson, 'w+') as myfile:
-            json.dump(myjson, myfile)
-
     else:
-        embed = discord.Embed(title='You are not the guild owner or administrator.', color=embedcolor,
+        embed = discord.Embed(title='You are not the guild owner or administrator.', color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
     await ctx.channel.send(embed=embed)
 
@@ -513,9 +488,8 @@ with open(os.path.dirname(__file__) + '/marcieapi.json', 'r') as infile:
 fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={keys['API_KEY']}"
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
-embedcolor=0xd93fb6
-codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
-settingsjson = os.path.dirname(__file__) + "/settings.json"
+EMBEDCOLOR=0xd93fb6
+CODEVALIDATOR = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
 
 # Used to pass token as a variable when launching bot
 # Allows to not post sensitive data to github
