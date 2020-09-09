@@ -482,10 +482,9 @@ async def prefix(ctx, prefix):
 
 # For FFTCG Parser Commands
 
-with open('marcieapi.json', 'r') as infile:
-    keys = json.load(infile)
+API_KEY = sys.argv[2]
 
-fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={keys['API_KEY']}"
+fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={API_KEY}"
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 EMBEDCOLOR=0xd93fb6
