@@ -13,7 +13,7 @@ import pymongo
 __author__ = "Japnix"
 
 # MongoDB Client
-MONGODB = "mongodb://127.0.0.1:27017"
+MONGODB = "mongodb://db.:27017"
 MYCLIENT = pymongo.MongoClient(MONGODB)
 MYDB = MYCLIENT['MarcieProd']
 
