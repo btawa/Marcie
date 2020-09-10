@@ -9,11 +9,20 @@ import uuid
 import os
 import json
 import pymongo
+import argparse
 
 __author__ = "Japnix"
 
+# Create argparse parser
+parser = argparse.ArgumentParser(description='Run a Marcie bot"')
+parser.add_argument('-d', '--db', type=str ,help='mongob:// url with port', required=True)
+parser.add_argument('-a', '--api', type=str, help='Card API address Ex: http://dev.tawa.wtf:8000', required=True)
+parser.add_argument('-t', '--token', type=str, help='Discord bot token that will be used', required=True)
+parser.add_argument('-k', '--key', type=str, help='Card API key', required=True)
+args = parser.parse_args()
+
 # MongoDB Client
-MONGODB = "mongodb://db.:27017"
+MONGODB = args.db
 MYCLIENT = pymongo.MongoClient(MONGODB)
 MYDB = MYCLIENT['MarcieProd']
 
@@ -482,9 +491,9 @@ async def prefix(ctx, prefix):
 
 # For FFTCG Parser Commands
 
-API_KEY = sys.argv[2]
+API_KEY = args.key
 
-fftcgURL = f"http://dev.tawa.wtf:8000/api/?api_key={API_KEY}"
+fftcgURL = f"{args.api}?api_key={args.key}"
 cards = loadJson(fftcgURL)
 MAX_QUERY = 35
 EMBEDCOLOR=0xd93fb6
@@ -493,7 +502,7 @@ CODEVALIDATOR = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp]
 # Used to pass token as a variable when launching bot
 # Allows to not post sensitive data to github
 # python3 <marcie.py> 'token'
-mytoken = sys.argv[1]
+mytoken = args.token
 
 bot.run(mytoken)
 
