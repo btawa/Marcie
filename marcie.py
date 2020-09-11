@@ -68,6 +68,7 @@ bot = commands.Bot(command_prefix=get_pre, description=description)
 async def on_guild_remove(ctx):
     mycol = MYDB['settings']
     mycol.delete_one({'guildid': ctx.id})
+    logging.info(f"Guild: {str(ctx.name)} has removed Marcie")
 
 
 # This function handles when we try to trigger a command with our prefix that doesn't exist
@@ -84,6 +85,7 @@ async def on_guild_join(ctx):
     mycol.find_one_and_update({'guildid': ctx.id},
                               {'$set': {'guildid': ctx.id, 'prefix': '?', 'name': ctx.name}},
                               upsert=True)
+    logging.info(f"Guild: {ctx.name} has added Marcie")
 
 
 @bot.event
@@ -94,8 +96,8 @@ async def on_ready():
         logging.info(f"Logged in as")
         logging.info(f"{bot.user.name}")
         logging.info(f"bot.user.id}")
-        logging.info(f"Startup Time: {str(datetime.datetime.utcnow())})
-        logging.info(f"Guilds Added: {str(len(bot.guilds))})
+        logging.info(f"Startup Time: {str(datetime.datetime.utcnow())}")
+        logging.info(f"Guilds Added: {str(len(bot.guilds))}")
         logging.info(f"------")
 
         mycol = MYDB['settings']
