@@ -26,11 +26,28 @@ MONGODB = args.db
 MYCLIENT = pymongo.MongoClient(MONGODB)
 MYDB = MYCLIENT['MarcieProd']
 
+# Passed in ARGS
+API_KEY = args.key
+API = args.api
+DISCORD_TOKEN = args.token
+
+# Marcie Globals
+API_COMPLETE = f"{API}?api_key={API_KEY}"
+MAX_QUERY = 35
+EMBEDCOLOR=0xd93fb6
+CODEVALIDATOR = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
+
+# Where card are loaded into python.  This variable is referenced a lot in this program.
+#
+# TODO: Should probably be passing the dictionary into function
+# TODO: Change variable name throughout program
+cards = loadJson(API_COMPLETE)
+
 # Enable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
 
-# Read in prefix from settings.json
+# Read in prefix from mongodb
 async def get_pre(bot, message):
     mycol = MYDB['settings']
     dbq = mycol.find_one({'guildid': message.guild.id})
@@ -489,20 +506,5 @@ async def prefix(ctx, prefix):
     await ctx.channel.send(embed=embed)
 
 
-# For FFTCG Parser Commands
-
-API_KEY = args.key
-
-fftcgURL = f"{args.api}?api_key={args.key}"
-cards = loadJson(fftcgURL)
-MAX_QUERY = 35
-EMBEDCOLOR=0xd93fb6
-CODEVALIDATOR = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
-
-# Used to pass token as a variable when launching bot
-# Allows to not post sensitive data to github
-# python3 <marcie.py> 'token'
-mytoken = args.token
-
-bot.run(mytoken)
+bot.run(DISCORD_TOKEN)
 
