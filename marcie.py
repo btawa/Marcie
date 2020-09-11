@@ -36,6 +36,7 @@ API_COMPLETE = f"{API}?api_key={API_KEY}"
 MAX_QUERY = 35
 EMBEDCOLOR=0xd93fb6
 CODEVALIDATOR = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
+FIRSTRUN = True
 
 # Where card are loaded into python.  This variable is referenced a lot in this program.
 #
@@ -87,39 +88,45 @@ async def on_guild_join(ctx):
 
 @bot.event
 async def on_ready():
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
-    print('Startup Time: ' + str(datetime.datetime.utcnow()))
-    print('Guilds Added: ' + str(len(bot.guilds)))
-    print('------')
+    global FIRSTRUN
+    
+    if FIRSTRUN is True:
+        logging.info(f"Logged in as")
+        logging.info(f"{bot.user.name}")
+        logging.info(f"bot.user.id}")
+        logging.info(f"Startup Time: {str(datetime.datetime.utcnow())})
+        logging.info(f"Guilds Added: {str(len(bot.guilds))})
+        logging.info(f"------")
 
-    mycol = MYDB['settings']
-    dbq = mycol.find()
+        mycol = MYDB['settings']
+        dbq = mycol.find()
 
-    dbguilds = [doc['guildid'] for doc in dbq]
-    botguilds = [guild.id for guild in bot.guilds]
+        dbguilds = [doc['guildid'] for doc in dbq]
+        botguilds = [guild.id for guild in bot.guilds]
 
 
-    # If when we start the bot there are more guilds in settings.json then the bot see's as joined
-    # we remove those bots from settings.json
-    if len(dbguilds) > len(botguilds):
-        for guildid in dbguilds:
-            if guildid not in botguilds:
-                dbq = mycol.find_one({"guildid": guildid})
-                logging.info(f"Guild {dbq['name']} ({guildid}) was removed while the bot was offline.  Removing from db.")
-                mycol.delete_one({'guildid': guildid})
+        # If when we start the bot there are more guilds in settings.json then the bot see's as joined
+        # we remove those bots from settings.json
+        if len(dbguilds) > len(botguilds):
+            for guildid in dbguilds:
+                if guildid not in botguilds:
+                    dbq = mycol.find_one({"guildid": guildid})
+                    logging.info(f"Guild {dbq['name']} ({guildid}) was removed while the bot was offline.  Removing from db.")
+                    mycol.delete_one({'guildid': guildid})
 
-    # Else if the bot see's more guilds than what is present in settings.json we add the missing guilds with default
-    # settings
-    elif len(dbguilds) < len(botguilds):
-        for guildid in botguilds:
-            if guildid not in dbguilds:
-                guild2add = bot.get_guild(guildid)
-                logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to db.")
-                mycol.find_one_and_update({'guildid': guild2add.id},
-                                          {'$set': {'guildid': guild2add.id, 'prefix': '?', 'name': guild2add.name}},
-                                          upsert=True)
+        # Else if the bot see's more guilds than what is present in settings.json we add the missing guilds with default
+        # settings
+        elif len(dbguilds) < len(botguilds):
+            for guildid in botguilds:
+                if guildid not in dbguilds:
+                    guild2add = bot.get_guild(guildid)
+                    logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to db.")
+                    mycol.find_one_and_update({'guildid': guild2add.id},
+                                              {'$set': {'guildid': guild2add.id, 'prefix': '?', 'name': guild2add.name}},
+                                              upsert=True)
+        FIRSTRUN = False
+    else:
+        logging.info('Re-running on_ready, but not first run so doing nothing.')
 
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
