@@ -10,6 +10,7 @@ import os
 import json
 import pymongo
 import argparse
+import time
 
 __author__ = "Japnix"
 
@@ -37,6 +38,7 @@ MAX_QUERY = 35
 EMBEDCOLOR=0xd93fb6
 CODEVALIDATOR = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
 FIRSTRUN = True
+APPSTART = time.time()
 
 # Where card are loaded into python.  This variable is referenced a lot in this program.
 #
@@ -129,6 +131,16 @@ async def on_ready():
         FIRSTRUN = False
     else:
         logging.info('Re-running on_ready, but not first run so doing nothing.')
+
+
+@commands.cooldown(2, 10, type=commands.BucketType.user)
+@bot.command()
+async def uptime(ctx):
+    """Returns how long marcie has been running.
+    """
+    uptime = f"```{datetime.timedelta(seconds=time.time() - APPSTART)}```"
+
+    await ctx.channel.send(uptime)
 
 
 @commands.cooldown(2, 10, type=commands.BucketType.user)
