@@ -167,7 +167,51 @@ async def tiny(ctx, *, name: str):
     my_uuid = uuid.uuid1().hex[:10]
     logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
-    mycard = grab_cards(name.lower(), cards)
+    mycard = grab_cards(name.lower(), cards, "Name")
+
+    output = ''
+
+    if not mycard:
+        output = '```No Match```'
+    else:
+        if len(mycard) >= MAX_QUERY:
+            output = 'Too many cards please be more specific'
+        else:
+            for x in mycard:
+                output = output + prettyCode(x) + "\n"
+
+        if len(output) >= 2000:
+            output = '```Too many characters for discord, please be more specific````'
+        else:
+            output = '```' + output + '```'
+    await ctx.channel.send(output)
+
+
+@commands.cooldown(2, 10, type=commands.BucketType.user)
+@bot.command()
+async def tinyjob(ctx, *, name: str):
+    """Returns a compacted list of cards. Takes a Job.  Accepts regex.
+
+    This command was initially created when name and image were less developed.  It takes in a card name and returns a
+    compacted list of cards.  It is mostly used as a debug tool now.
+
+    Known Caveats:
+    This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match as you
+    may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of
+    the overall card name.
+
+        Example:
+        ?tiny sarah (mobius) vs ?name sarah \(mobius\)
+        ?tiny Mog (XIII-2) vs ?name Mog \(XIII-2\)
+
+    Example:
+        ?tiny summoner
+    """
+
+    my_uuid = uuid.uuid1().hex[:10]
+    logging.info(f"{ctx.message.content} - ID: {my_uuid}")
+
+    mycard = grab_cards(name.lower(), cards, "Job")
 
     output = ''
 
@@ -286,7 +330,7 @@ async def name(ctx, *, name: str):
     # If we don't match a code, the we assume we are searching by name
     else:
 
-        mycard = grab_cards(name.lower(), cards)  # Grabbing our cards to parse
+        mycard = grab_cards(name.lower(), cards, "Name")  # Grabbing our cards to parse
 
         output = ''
 
@@ -416,7 +460,7 @@ async def image(ctx, *, name: str):
             await ctx.channel.send(embed=embed)
 
     else:
-        mycard = grab_cards(name.lower(), cards)
+        mycard = grab_cards(name.lower(), cards, "Name")
 
         output = ''
 

@@ -41,7 +41,7 @@ def grab_card(req, cards):
 # Name_EN value in the cards dictionary.  This function can
 # return a single card or multiple cards.
 
-def grab_cards(req, cards):
+def grab_cards(req, cards, type):
     our_cards = []
 
     try:
@@ -51,8 +51,16 @@ def grab_cards(req, cards):
     else:
 
         for x in cards:
-            if re.search(req, f"{x[u'Name_EN']}".lower()):
-                our_cards.append(x)
+            if type == "Name":
+                if re.search(req, f"{x[u'Name_EN']}".lower()):
+                    our_cards.append(x)
+            elif type == "Job":
+                if re.search(req, f"{x[u'Job_EN']}".lower()):
+                    our_cards.append(x)
+            elif type == "Title":
+                if re.search(req, f"{x[u'Category_1']}".lower()):
+                    our_cards.append(x)
+
         return our_cards
 
 
