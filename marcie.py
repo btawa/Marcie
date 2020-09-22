@@ -11,6 +11,7 @@ import json
 import pymongo
 import argparse
 import time
+import shlex
 
 __author__ = "Japnix"
 
@@ -569,6 +570,69 @@ async def prefix(ctx, prefix):
         embed = discord.Embed(title='You are not the guild owner or administrator.', color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
     await ctx.channel.send(embed=embed)
+
+
+@bot.command()
+async def beta(ctx, *, arg): 
+
+    """This command allows card querying by providing arguments to filter off of.
+        -n, --name - Card Name (Yuna, Vaelfor, etc. (takes regex))
+        -j, --job - Card Job (Summoner, Samurai, etc. (takes regex))
+        -e, --element - Card Element (Fire, Ice, Light, etc.)
+        -c, --cost - Card Cost (Int)
+        -t, --type - Card Type (Forward, Backup, etc.)
+
+    Example:
+        ?beta --name yuna --type backup --cost 2
+
+    Known Caveats:
+        - If using card name or card job which has spaces please surround argument in quotes:
+            ?beta --name "Cloud of Darkness" --type forward --cost 5
+
+        - Special regex characters need to be escaped.:
+            ?beta --name "Cid \(Mobius\)"
+
+    """
+
+    logging.info(str(len(arg)))
+    query = shlex.split(arg)
+
+    parser = argparse.ArgumentParser(description="beta1 argument parser")
+    parser.add_argument('-j', '--job', type=str)
+    parser.add_argument('-e', '--element', type=str)
+    parser.add_argument('-c', '--cost', type=str)
+    parser.add_argument('-t', '--type', type=str)
+    parser.add_argument('-n', '--name', type=str)
+
+    try:
+        args = parser.parse_args(query)
+    except SystemExit as err:
+        await ctx.channel.send('```marcie.py [-j JOB] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
+        return
+
+
+    my_uuid = uuid.uuid1().hex[:10]
+    logging.info(f"{ctx.message.content} - ID: {my_uuid}")
+
+    mycard = grab_cards_beta(cards, vars(args))
+
+    output = ''
+
+    if not mycard:
+        output = '```No Match```'
+    else:
+        if len(mycard) >= MAX_QUERY:
+            output = 'Too many cards please be more specific'
+        else:
+            for x in mycard:
+                output = output + prettyCode(x) + "\n"
+
+        if len(output) >= 2000:
+            output = '```Too many characters for discord, please be more specific````'
+        else:
+            output = '```' + output + '```'
+    await ctx.channel.send(output)
+
 
 
 bot.run(DISCORD_TOKEN)

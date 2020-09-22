@@ -6,6 +6,7 @@ import roman
 import random
 import requests
 import time
+import logging
 
 # Helpful jq
 #
@@ -13,14 +14,17 @@ import time
 #
 # JSON Keys
 #
-# Code		Power		Ex_Burst	Text		Text_EN		Text_DE		Text_ES		Text_FR		Text_IT		Type_NA
-# Element	Category_1	Name		Name_EN		Name_DE		Name_ES		Name_FR		Name_IT		Set		Name_NA
-# Rarity		Category_2	Type		Type_EN		Type_DE		Type_ES		Type_FR		Type_IT		Text_NA
-# Cost		Multicard	Job		Job_EN		Job_DE		Job_ES		Job_FR		Job_IT		Job_NA
+# Code      Power       Ex_Burst    Text        Text_EN     Text_DE     Text_ES     Text_FR     Text_IT     Type_NA
+# Element   Category_1  Name        Name_EN     Name_DE     Name_ES     Name_FR     Name_IT     Set     Name_NA
+# Rarity        Category_2  Type        Type_EN     Type_DE     Type_ES     Type_FR     Type_IT     Text_NA
+# Cost      Multicard   Job     Job_EN      Job_DE      Job_ES      Job_FR      Job_IT      Job_NA
 
 # This function reads in a request, and a cards dictionary.
 # Based on the request it will search the dictionary for a match
 # based on the FFTCG card code and return a single card.
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+
 
 def grab_card(req, cards):
     our_card = ''
@@ -62,6 +66,61 @@ def grab_cards(req, cards, type):
                     our_cards.append(x)
 
         return our_cards
+
+
+def grab_cards_beta(cards, filters):
+    our_cards = cards
+
+    def filterCards(cards, req, qtype):
+        filteredcards = []
+
+        try:            
+            for card in cards:
+                if qtype == 'name':
+                    cardre = re.compile(req.lower())
+                    if re.search(cardre, card[u'Name_EN'].lower()):
+                        filteredcards.append(card)
+                elif qtype == 'job':
+                    cardre = re.compile(req.lower())
+                    if re.search(cardre, card[u'Job_EN'].lower()):
+                        filteredcards.append(card)
+                elif qtype == 'type':
+                    if req.lower() == card[u'Type_EN'].lower():
+                        filteredcards.append(card)
+                elif qtype == 'cost':
+                    try:
+                        req = int(req)
+                        if req == card[u'Cost']:
+                            filteredcards.append(card)
+                    except Exception as err:
+                        logging.info(err)
+                        return
+
+                elif qtype == 'element':
+                    if req.lower() == card[u'Element'].lower():
+                        filteredcards.append(card)
+
+            return filteredcards
+
+        except Exception as err:
+            logging.info(err)
+            return 
+
+    try:
+
+        f = [f for f in filters.keys() if filters[f] != None]
+
+
+
+        for key in f:
+            our_cards = filterCards(our_cards, filters[key], key)
+
+        return our_cards
+        
+    except Exception as err:
+        logging.info(err)
+        return our_cards
+
 
 
 # This reads in a card likely from grab_card or grab_cards and
