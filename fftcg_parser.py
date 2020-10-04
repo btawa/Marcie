@@ -95,7 +95,10 @@ def grab_cards_beta(cards, filters):
                     except Exception as err:
                         logging.info(err)
                         return
-
+                elif qtype == 'category':
+                    cardre = re.compile(req.lower())
+                    if re.search(cardre, card[u'Category_1'].lower()):
+                        filteredcards.append(card)
                 elif qtype == 'element':
                     if req.lower() == card[u'Element'].lower():
                         filteredcards.append(card)
@@ -109,8 +112,6 @@ def grab_cards_beta(cards, filters):
     try:
 
         f = [f for f in filters.keys() if filters[f] != None]
-
-
 
         for key in f:
             our_cards = filterCards(our_cards, filters[key], key)

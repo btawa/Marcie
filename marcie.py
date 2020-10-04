@@ -581,6 +581,7 @@ async def beta(ctx, *, arg):
         -e, --element - Card Element (Fire, Ice, Light, etc.)
         -c, --cost - Card Cost (Int)
         -t, --type - Card Type (Forward, Backup, etc.)
+        -c, --category - Card Category (FFCC, X, etc.)
 
     Example:
         ?beta --name yuna --type backup --cost 2
@@ -594,20 +595,20 @@ async def beta(ctx, *, arg):
 
     """
 
-    logging.info(str(len(arg)))
     query = shlex.split(arg)
 
-    parser = argparse.ArgumentParser(description="beta1 argument parser")
+    parser = argparse.ArgumentParser(description="beta argument parser")
     parser.add_argument('-j', '--job', type=str)
     parser.add_argument('-e', '--element', type=str)
     parser.add_argument('-c', '--cost', type=str)
     parser.add_argument('-t', '--type', type=str)
     parser.add_argument('-n', '--name', type=str)
+    parser.add_argument('-g', '--category', type=str)
 
     try:
         args = parser.parse_args(query)
     except SystemExit as err:
-        await ctx.channel.send('```marcie.py [-j JOB] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
+        await ctx.channel.send('```marcie.py [-j JOB] [-g CATEGORY] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
         return
 
 
@@ -615,7 +616,6 @@ async def beta(ctx, *, arg):
     logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
     mycard = grab_cards_beta(cards, vars(args))
-
     output = ''
 
     if not mycard:
@@ -632,7 +632,6 @@ async def beta(ctx, *, arg):
         else:
             output = '```' + output + '```'
     await ctx.channel.send(output)
-
 
 
 bot.run(DISCORD_TOKEN)
