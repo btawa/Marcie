@@ -581,7 +581,7 @@ async def beta(ctx, *, arg):
         -e, --element - Card Element (Fire, Ice, Light, etc.)
         -c, --cost - Card Cost (Int)
         -t, --type - Card Type (Forward, Backup, etc.)
-        -c, --category - Card Category (FFCC, X, etc.)
+        -g, --category - Card Category (FFCC, X, etc.)
 
     Example:
         ?beta --name yuna --type backup --cost 2
