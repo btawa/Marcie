@@ -87,6 +87,14 @@ def grab_cards_beta(cards, filters):
                 elif qtype == 'type':
                     if req.lower() == card[u'Type_EN'].lower():
                         filteredcards.append(card)
+                elif qtype == 'power':
+                    try:
+                        req = int(req)
+                        if req == card[u'Power']:
+                            filteredcards.append(card)
+                    except Exception as err:
+                        logging.info(err)
+                        return
                 elif qtype == 'cost':
                     try:
                         req = int(req)

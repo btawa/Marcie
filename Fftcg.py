@@ -84,6 +84,7 @@ async def selectLogic(ctx, bot, cards, uuid, querytype):
 
     try:
         mycard = cards[int(message.content) - 1]
+        message.delete()
 
         if querytype == "namequery":
             embed = cardToNameEmbed(mycard, uuid)
@@ -177,34 +178,25 @@ class FFTCG(commands.Cog):
         parser.add_argument('-t', '--type', type=str)
         parser.add_argument('-n', '--name', type=str)
         parser.add_argument('-g', '--category', type=str)
+        parser.add_argument('-p', '--power', type=str)
 
         try:
             args = parser.parse_args(query)
         except SystemExit as err:
-            await ctx.channel.send('```marcie.py [-j JOB] [-g CATEGORY] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
+            await ctx.channel.send('```marcie.py [-j JOB] [-p POWER] [-g CATEGORY] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
             return
-
 
         my_uuid = uuid.uuid1().hex[:10]
         logging.info(f"{ctx.message.content} - ID: {my_uuid}")
 
         mycard = grab_cards_beta(self.cards, vars(args))
-        output = ''
 
-        if not mycard:
-            output = '```No Match```'
+        if len(mycard) == 0:
+            await ctx.channel.send(embed=NOMATCH_EMBED)
+        elif len(mycard) == 1:
+            await ctx.channel.send(embed=cardToNameEmbed(mycard[0], my_uuid))
         else:
-            if len(mycard) >= MAX_QUERY:
-                output = 'Too many cards please be more specific'
-            else:
-                for x in mycard:
-                    output = output + prettyCode(x) + "\n"
-
-            if len(output) >= 2000:
-                output = '```Too many characters for discord, please be more specific````'
-            else:
-                output = '```' + output + '```'
-        await ctx.channel.send(output)
+            await selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
