@@ -87,7 +87,9 @@ async def selectLogic(ctx, bot, cards, uuid, querytype):
 
         try:
             await message.delete()
-        except:
+        except discord.Forbidden:
+            logging.info(f'Marcie does not have permission to delete messages in {ctx.guild.name}')
+        finally:
             pass
 
         if querytype == "namequery":
@@ -149,7 +151,6 @@ class FFTCG(commands.Cog):
                 output = '```' + output + '```'
         await ctx.channel.send(output)
 
-
     @commands.command()
     async def beta(self, ctx, *, arg):
 
@@ -160,6 +161,7 @@ class FFTCG(commands.Cog):
             -c, --cost - Card Cost (Int)
             -t, --type - Card Type (Forward, Backup, etc.)
             -g, --category - Card Category (FFCC, X, etc.)
+            -p, --power - Card Power (9000, 3000, etc.)
 
         Example:
             ?beta --name yuna --type backup --cost 2
@@ -170,7 +172,6 @@ class FFTCG(commands.Cog):
 
             - Special regex characters need to be escaped.:
                 ?beta --name "Cid \(Mobius\)"
-
         """
 
         query = shlex.split(arg)
@@ -205,7 +206,7 @@ class FFTCG(commands.Cog):
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def pack(self, ctx, opus, *args):
-        """BETA - Returns a randomized pack based on the opus you provide.
+        """Returns a randomized pack based on the opus you provide.
 
         The -sp flag can be used to generate a strawpoll for pack 1 pick 1
 
@@ -326,6 +327,16 @@ class FFTCG(commands.Cog):
         If there are multiple matches on your query, the bot will provide you with a list of cards that you can respond to
         by simply sending a message with the corresponding number (this will timeout after 10 seconds).
 
+        Known Caveats:
+        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match as you
+        may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of
+        the overall card name.
+
+            Example:
+            ?image sarah (mobius) vs ?name sarah \(mobius\)
+            ?image Mog (XIII-2) vs ?name Mog \(XIII-2\)
+
+
         Example:
             ?image auron
             ?image 1-001H
@@ -383,9 +394,27 @@ class FFTCG(commands.Cog):
                 else:
                     await selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery")
 
-
     @commands.command()
     async def paginate(self, ctx, *, name: str):
+        """Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
+
+        This function only takes one argument, a name. It will return the image of the card as an embed.
+        If there are multiple matches on your query, the bot will provide react emojis that can be used to page through each card.
+        Only the users who create the query will be able to activate these react emojis.
+
+        Known Caveats:
+        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match as you
+        may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of
+        the overall card name.
+
+            Example:
+            ?paginate sarah (mobius) vs ?paginate sarah \(mobius\)
+            ?paginate Mog (XIII-2) vs ?paginate Mog \(XIII-2\)
+
+
+        Example:
+            ?paginate leviathan
+        """
 
         my_uuid = uuid.uuid1().hex[:10]
         mycards = grab_cards(name.lower(), self.cards, "Name")

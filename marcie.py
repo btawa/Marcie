@@ -35,6 +35,7 @@ FIRSTRUN = True
 # Enable logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
+
 # Read in prefix from mongodb
 async def get_pre(bot, message):
     mycol = MYDB['settings']
@@ -66,7 +67,7 @@ async def on_command_error(ctx, error):
         logging.info(str(error))
 
 
-# This function handles when the bot is added to a build
+# This function handles when the bot is added to a guild
 @bot.event
 async def on_guild_join(ctx):
     mycol = MYDB['settings']
@@ -78,6 +79,9 @@ async def on_guild_join(ctx):
 
 @bot.event
 async def on_ready():
+
+    # on_ready gets can run more than just when the bot is started
+    # so we don't need to do all the checks everytime
     global FIRSTRUN
     
     if FIRSTRUN is True:
@@ -95,8 +99,8 @@ async def on_ready():
         botguilds = [guild.id for guild in bot.guilds]
 
 
-        # If when we start the bot there are more guilds in settings.json then the bot see's as joined
-        # we remove those bots from settings.json
+        # If when we start the bot there are more guilds in the db then the bot see's as joined
+        # we remove those guilds from the db
         if len(dbguilds) > len(botguilds):
             for guildid in dbguilds:
                 if guildid not in botguilds:
@@ -119,4 +123,3 @@ async def on_ready():
         logging.info('Re-running on_ready, but not first run so doing nothing.')
 
 bot.run(DISCORD_TOKEN)
-
