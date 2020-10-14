@@ -84,7 +84,7 @@ async def selectLogic(ctx, bot, cards, uuid, querytype):
 
     try:
         mycard = cards[int(message.content) - 1]
-        message.delete()
+        await message.delete()
 
         if querytype == "namequery":
             embed = cardToNameEmbed(mycard, uuid)
