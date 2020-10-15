@@ -7,109 +7,8 @@ import logging
 import re
 import shlex
 import argparse
-import datetime
 from constants import EMBEDCOLOR, MAX_QUERY, CODE_VALIDATOR
-
-NOMATCH_EMBED = discord.Embed(
-    title='No Match',
-    color=EMBEDCOLOR,
-    imestamp=datetime.datetime.utcnow())
-
-TOOMANYCARDS_EMBED = discord.Embed(
-    title='Too many cards please be more specific',
-    color=EMBEDCOLOR,
-    timestamp=datetime.datetime.utcnow())
-
-TOOMANYCHAR_EMBED = discord.Embed(
-    title='Too many characters please be more specific',
-    color=EMBEDCOLOR,
-    timestamp=datetime.datetime.utcnow())
-
-
-def cardlistToEmbed(cards, uuid):
-    output = str()
-
-    for card in cards:
-        if cards.index(card) == 0:
-            output = str(cards.index(card) + 1) + ".) " + prettyCode(card)
-        else:
-            output = output + "\n" + str(cards.index(card) + 1) + ".) " + prettyCode(card)
-
-    embed = discord.Embed(title='Please choose a card by typing its number',
-                          timestamp=datetime.datetime.utcnow(),
-                          description=output,
-                          color=EMBEDCOLOR)
-    embed.set_footer(text='ID: ' + uuid)
-
-    return embed
-
-
-def cardToNameEmbed(card, uuid):
-    mycard = prettyCard(card)
-
-    embed = discord.Embed(title=mycard.split('\n', 1)[0],
-                          timestamp=datetime.datetime.utcnow(),
-                          description=mycard.split('\n', 1)[1],
-                          color=EMBEDCOLOR)
-    embed.set_footer(text='ID: ' + uuid)
-    embed.set_thumbnail(url=card['image_url'])
-
-    return embed
-
-
-def cardToImageEmbed(card, uuid):
-    embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
-    embed.set_image(url=card[u'image_url'])
-    embed.set_footer(text='ID: ' + uuid)
-
-    return embed
-
-
-async def selectLogic(ctx, bot, cards, uuid, querytype):
-    embed = cardlistToEmbed(cards, uuid)
-    mymessage = await ctx.channel.send(embed=embed)
-    
-    def check(msg):
-        if re.match(r'^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
-            if len(cards) >= int(msg.content) >= 1:
-                logging.info(f"Choice: {msg.content}")
-                return True
-        else:
-            return False
-
-    # This is where we wait for a message from the user who initiated the command
-    # It will time out after 10 seconds.
-    try:
-        message = await bot.wait_for('message', check=check, timeout=10)
-
-    # If we don't receive a message after 10 seconds we send a timeout embed
-    except:
-        logging.info('Command timed out')
-        embed = discord.Embed(title='Command timed out', color=EMBEDCOLOR,
-                              timestamp=datetime.datetime.utcnow())
-        embed.set_footer(text='ID: ' + uuid)
-        await mymessage.edit(embed=embed)
-        return
-
-    logging.info('\n' + prettyCard(cards[int(message.content) - 1]))
-
-    try:
-        mycard = cards[int(message.content) - 1]
-
-        try:
-            await message.delete()
-        except discord.Forbidden:
-            logging.info(f'Marcie does not have permission to delete messages in {ctx.guild.name}')
-        finally:
-            pass
-
-        if querytype == "namequery":
-            embed = cardToNameEmbed(mycard, uuid)
-        elif querytype == "imagequery":
-            embed = cardToImageEmbed(mycard, uuid)
-        await mymessage.edit(embed=embed)
-    except Exception as err:
-        print(err)
+from MarcieEmbed import MarcieEmbed
 
 
 class FFTCG(commands.Cog):
@@ -118,6 +17,52 @@ class FFTCG(commands.Cog):
         self.api = api
         self.cards = loadJson(api)
         self.codevalidator = re.compile(CODE_VALIDATOR)
+
+    @staticmethod
+    async def selectLogic(ctx, bot, cards, uuid, querytype):
+        embed = MarcieEmbed.cardlistToEmbed(cards, uuid)
+        mymessage = await ctx.channel.send(embed=embed)
+
+        def check(msg):
+            if re.match(r'^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
+                if len(cards) >= int(msg.content) >= 1:
+                    logging.info(f"Choice: {msg.content}")
+                    return True
+            else:
+                return False
+
+        # This is where we wait for a message from the user who initiated the command
+        # It will time out after 10 seconds.
+        try:
+            message = await bot.wait_for('message', check=check, timeout=10)
+
+        # If we don't receive a message after 10 seconds we send a timeout embed
+        except:
+            logging.info('Command timed out')
+            embed = MarcieEmbed.COMMANDTIMEOUT
+            embed.set_footer(text='ID: ' + uuid)
+            await mymessage.edit(embed=embed)
+            return
+
+        logging.info('\n' + prettyCard(cards[int(message.content) - 1]))
+
+        try:
+            mycard = cards[int(message.content) - 1]
+
+            try:
+                await message.delete()
+            except discord.Forbidden:
+                logging.info(f'Marcie does not have permission to delete messages in {ctx.guild.name}')
+            finally:
+                pass
+
+            if querytype == "namequery":
+                embed = MarcieEmbed.cardToNameEmbed(mycard, uuid)
+            elif querytype == "imagequery":
+                embed = MarcieEmbed.cardToImageEmbed(mycard, uuid)
+            await mymessage.edit(embed=embed)
+        except Exception as err:
+            print(err)
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
@@ -162,6 +107,7 @@ class FFTCG(commands.Cog):
                 output = '```' + output + '```'
         await ctx.channel.send(output)
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def beta(self, ctx, *, arg):
 
@@ -209,11 +155,11 @@ class FFTCG(commands.Cog):
         mycard = grab_cards_beta(self.cards, vars(args))
 
         if len(mycard) == 0:
-            await ctx.channel.send(embed=NOMATCH_EMBED)
+            await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
         elif len(mycard) == 1:
-            await ctx.channel.send(embed=cardToNameEmbed(mycard[0], my_uuid))
+            await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid))
         else:
-            await selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
+            await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
@@ -291,13 +237,13 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = NOMATCH_EMBED
+                embed = MarcieEmbed.NOMATCH
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
             # Print the card information as an embed
             else:
                 logging.info('\n' + prettyCard(mycard))
-                embed = cardToNameEmbed(mycard, my_uuid)
+                embed = MarcieEmbed.cardToNameEmbed(mycard, my_uuid)
                 await ctx.channel.send(embed=embed)
 
         # If we don't match a code, the we assume we are searching by name
@@ -308,7 +254,7 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = NOMATCH_EMBED
+                embed = MarcieEmbed.NOMATCH
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
@@ -317,19 +263,19 @@ class FFTCG(commands.Cog):
 
                 # If there are more than MAX_QUERY cards in the list return too many cards as an embed
                 if len(mycard) >= MAX_QUERY:
-                    embed = TOOMANYCARDS_EMBED
+                    embed = MarcieEmbed.TOOMANYCARDS
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
 
                 # If there is only one match, return that card as an embed
                 elif len(mycard) == 1:
                     logging.info('\n' + prettyCard(mycard[0]))
-                    embed = cardToNameEmbed(mycard[0], my_uuid)
+                    embed = MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid)
                     await ctx.channel.send(embed=embed)
 
                 # Else we have to parse through the cards and ask for user input
                 else:
-                    await selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
+                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
@@ -367,13 +313,13 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = NOMATCH_EMBED
+                embed = MarcieEmbed.NOMATCH
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
             # Print the card information as an embed
             else:
                 logging.info('\n' + prettyCard(mycard))
-                embed = cardToImageEmbed(mycard, my_uuid)
+                embed = MarcieEmbed.cardToImageEmbed(mycard, my_uuid)
                 await ctx.channel.send(embed=embed)
 
         # If we don't match a code, the we assume we are searching by name
@@ -384,7 +330,7 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = NOMATCH_EMBED
+                embed = MarcieEmbed.NOMATCH
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
@@ -393,19 +339,19 @@ class FFTCG(commands.Cog):
 
                 # If there are more than MAX_QUERY cards in the list return too many cards as an embed
                 if len(mycard) >= MAX_QUERY:
-                    embed = TOOMANYCARDS_EMBED
+                    embed = MarcieEmbed.TOOMANYCARDS
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
 
                 # If there is only one match, return that card as an embed
                 elif len(mycard) == 1:
                     logging.info('\n' + prettyCard(mycard[0]))
-                    embed = cardToImageEmbed(mycard[0], my_uuid)
+                    embed = MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid)
                     await ctx.channel.send(embed=embed)
 
                 # Else we have to parse through the cards and ask for user input
                 else:
-                    await selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery")
+                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery")
 
     @commands.command()
     async def paginate(self, ctx, *, name: str):
@@ -435,7 +381,7 @@ class FFTCG(commands.Cog):
         my_uuid = uuid.uuid1().hex[:10]
         mycards = grab_cards(name.lower(), self.cards, "Name")
 
-        embed_list = [cardToImageEmbed(card, my_uuid) for card in mycards]
+        embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid) for card in mycards]
 
         paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx)
         await paginator.run(embed_list)
