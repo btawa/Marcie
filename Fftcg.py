@@ -8,11 +8,22 @@ import re
 import shlex
 import argparse
 import datetime
-from constants import EMBEDCOLOR, MAX_QUERY
+from constants import EMBEDCOLOR, MAX_QUERY, CODE_VALIDATOR
 
-NOMATCH_EMBED = discord.Embed(title='No Match', color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
-TOOMANYCARDS_EMBED = discord.Embed(title='Too many cards please be more specific', color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
-TOOMANYCHAR_EMBED = discord.Embed(title='Too many characters please be more specific', color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+NOMATCH_EMBED = discord.Embed(
+    title='No Match',
+    color=EMBEDCOLOR,
+    imestamp=datetime.datetime.utcnow())
+
+TOOMANYCARDS_EMBED = discord.Embed(
+    title='Too many cards please be more specific',
+    color=EMBEDCOLOR,
+    timestamp=datetime.datetime.utcnow())
+
+TOOMANYCHAR_EMBED = discord.Embed(
+    title='Too many characters please be more specific',
+    color=EMBEDCOLOR,
+    timestamp=datetime.datetime.utcnow())
 
 
 def cardlistToEmbed(cards, uuid):
@@ -106,20 +117,20 @@ class FFTCG(commands.Cog):
         self.bot = bot
         self.api = api
         self.cards = loadJson(api)
-        self.codevalidator = re.compile(r'^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?')
+        self.codevalidator = re.compile(CODE_VALIDATOR)
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def tiny(self, ctx, *, name: str):
         """Returns a compacted list of cards. Takes a name.  Accepts regex.
 
-        This command was initially created when name and image were less developed.  It takes in a card name and returns a
-        compacted list of cards.  It is mostly used as a debug tool now.
+        This command was initially created when name and image were less developed.  It takes in a card name and returns
+         a compacted list of cards.  It is mostly used as a debug tool now.
 
         Known Caveats:
-        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match as you
-        may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of
-        the overall card name.
+        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match
+        as you may expect.  In these cases it is necessary to either escape the regex character '\(' or search a
+        different substring of the overall card name.
 
             Example:
             ?tiny sarah (mobius) vs ?name sarah \(mobius\)
@@ -188,7 +199,8 @@ class FFTCG(commands.Cog):
         try:
             args = parser.parse_args(query)
         except SystemExit as err:
-            await ctx.channel.send('```marcie.py [-j JOB] [-p POWER] [-g CATEGORY] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
+            await ctx.channel.send(
+                '```marcie.py [-j JOB] [-p POWER] [-g CATEGORY] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
             return
 
         my_uuid = uuid.uuid1().hex[:10]
@@ -248,14 +260,15 @@ class FFTCG(commands.Cog):
     async def name(self, ctx, *, name: str):
         """Returns text of card. Takes code or name.  Accepts regex.
 
-        This function only takes one argument, either a name or card code. It will return the text and thumbnail of the card
-        as an embed. If there are multiple matches on your query, the bot will provide you with a list of cards that you can
-        respond to by simply sending a message with the corresponding number (this will timeout after 10 seconds).
+        This function only takes one argument, either a name or card code. It will return the text and thumbnail of the
+        card as an embed. If there are multiple matches on your query, the bot will provide you with a list of cards
+        that you can respond to by simply sending a message with the corresponding number (this will timeout after 10
+        seconds).
 
         Known Caveats:
-        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match as you
-        may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of
-        the overall card name.
+        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match
+        as you may expect.  In these cases it is necessary to either escape the regex character '\(' or search a
+        different substring of the overall card name.
 
             Example:
             ?name sarah (mobius) vs ?name sarah \(mobius\)
@@ -323,14 +336,14 @@ class FFTCG(commands.Cog):
     async def image(self, ctx, *, name: str):
         """Returns image of card. Takes code or name.  Accepts regex.
 
-        This function only takes one argument, either a name or card code. It will return the image of the card as an embed.
-        If there are multiple matches on your query, the bot will provide you with a list of cards that you can respond to
-        by simply sending a message with the corresponding number (this will timeout after 10 seconds).
+        This function only takes one argument, either a name or card code. It will return the image of the card as an
+        embed. If there are multiple matches on your query, the bot will provide you with a list of cards that you can
+        respond to by simply sending a message with the corresponding number (this will timeout after 10 seconds).
 
         Known Caveats:
-        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match as you
-        may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of
-        the overall card name.
+        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match
+        as you may expect.  In these cases it is necessary to either escape the regex character '\(' or search a
+        different substring of the overall card name.
 
             Example:
             ?image sarah (mobius) vs ?name sarah \(mobius\)
@@ -399,13 +412,16 @@ class FFTCG(commands.Cog):
         """Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
 
         This function only takes one argument, a name. It will return the image of the card as an embed.
-        If there are multiple matches on your query, the bot will provide react emojis that can be used to page through each card.
-        Only the users who create the query will be able to activate these react emojis.
+        If there are multiple matches on your query, the bot will provide react emojis that can be used to page through
+        each card. Only the users who create the query will be able to activate these react emojis.
 
         Known Caveats:
-        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match as you
-        may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of
-        the overall card name.
+        This command requires the marcie to have `Manage Messages` permission.  Without this permission the react emojis
+        will not operate as expected.  If you have any questions please reach out in the support discord.
+
+        This command is using regex for matching.  As a result special regex characters like '(' and ')' may not match
+        as you may expect.  In these cases it is necessary to either escape the regex character '\(' or search a
+        different substring of the overall card name.
 
             Example:
             ?paginate sarah (mobius) vs ?paginate sarah \(mobius\)

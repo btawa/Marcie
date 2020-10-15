@@ -26,6 +26,16 @@ class Management(commands.Cog):
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
+    async def support(self, ctx):
+        """Marcie will ping you a invite to the support discord
+        """
+        msg = "Thanks for using Marcie! If you have any problems or suggestions let Japnix know!\n" \
+              "Support Discord: https://discord.gg/ZUZY7wb"
+
+        await ctx.author.send(msg)
+
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
+    @commands.command()
     async def prefix(self, ctx, prefix):
         """This command allows guild owners or administrators to change the prefix used for commands.
 
@@ -52,6 +62,7 @@ class Management(commands.Cog):
                                   timestamp=datetime.datetime.utcnow())
         await ctx.channel.send(embed=embed)
 
+    @support.error
     @uptime.error
     @prefix.error
     async def cooldown_error(self, ctx, error):
