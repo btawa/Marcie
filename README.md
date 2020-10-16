@@ -22,7 +22,8 @@ Marcie is a discord bot designed to provide discord users access to query for FF
 - pymongo
 - DiscordUtils
   
-## Installation  
+## Installation
+### Normal
 
     git clone  https://github.com/japnix/Marcie.git  
     pip3 install discord.py roman requests pymongo DiscordUtils
@@ -33,6 +34,10 @@ Marcie is a discord bot designed to provide discord users access to query for FF
     --key lolbbq \
     --api http://dev.tawa.wtf:8000/api/ \
     --db mongodb://db.:27017
+    
+### Docker
+Marcie is also available as a docker container.  For more information please check its readme on dockerhub.
+- https://hub.docker.com/r/japnix/marcie
 
 ### Requirements  
 Ensure that your bot has the ability to `Read Text Channels & See Voice Channels` and `Send Messages` in the server you have joined it to.
@@ -88,8 +93,8 @@ This function only takes one argument, either a name or card code. It will retur
 This command is using regex for matching.  As a result special regex characters like '(' and ')' may not matchas you may expect.  In these cases it is necessary to either escape the regex character '\(' or search adifferent substring of the overall card name.
 
     Example:
-    ?image sarah (mobius) vs ?name sarah \(mobius\)
-    ?image Mog (XIII-2) vs ?name Mog \(XIII-2\)
+        ?image sarah (mobius) vs ?name sarah \(mobius\)
+        ?image Mog (XIII-2) vs ?name Mog \(XIII-2\)
 
 ### ?tiny
 Returns a compacted list of cards. Takes a name.  Accepts regex.
@@ -97,8 +102,8 @@ Returns a compacted list of cards. Takes a name.  Accepts regex.
 This command was initially created when name and image were less developed.  It takes in a card name and returns a compacted list of cards.  It is mostly used as a debug tool now.
 
     Example:
-    ?tiny sarah (mobius) vs ?name sarah \(mobius\)
-    ?tiny Mog (XIII-2) vs ?name Mog \(XIII-2\)
+        ?tiny sarah (mobius) vs ?name sarah \(mobius\)
+        ?tiny Mog (XIII-2) vs ?name Mog \(XIII-2\)
 
 #### Known Caveats:
 This command is using regex for matching.  As a result special regex characters like '(' and ')' may not matchas you may expect.  In these cases it is necessary to either escape the regex character '\(' or search adifferent substring of the overall card name.
@@ -109,16 +114,16 @@ This command allows guild owners or administrators to change the prefix used for
 The default prefix is `?`  
   
     Example:  
-     ?prefix z!  
-     Then...     
-     z!name WOL  
+        ?prefix z!  
+        Then...     
+        z!name WOL  
 
   
 ### ?pack
 This command returns a randomized pack of the requested FFTCG set.  
 
     Example:  
-     ?pack 5
+        ?pack 5
 
 ### ?beta
 This command allows card querying by providing arguments to filter off of.
@@ -147,16 +152,16 @@ Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
 This function only takes one argument, a name. It will return the image of the card as an embed. If there are multiple matches on your query, the bot will provide react emojis that can be used to page througheach card. Only the users who create the query will be able to activate these react emojis.
 
     Example:
-    ?paginate leviathan
+        ?paginate leviathan
 
 #### Known Caveats
 - This command requires the marcie to have `Manage Messages` permission.  Without this permission the react emojis will not operate as expected.  If you have any questions please reach out in the support discord.
 
 - This command is using regex for matching.  As a result special regex characters like '(' and ')' may not matches you may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of the overall card name.
 
-		Example:
-		?paginate sarah (mobius) vs ?paginate sarah \(mobius\)
-		?paginate Mog (XIII-2) vs ?paginate Mog \(XIII-2\)
+        Example:
+            ?paginate sarah (mobius) vs ?paginate sarah \(mobius\)
+            ?paginate Mog (XIII-2) vs ?paginate Mog \(XIII-2\)
 
 
 ### ?support
