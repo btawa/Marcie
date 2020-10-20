@@ -21,6 +21,11 @@ class MarcieEmbed:
         color=EMBEDCOLOR,
         timestamp=datetime.datetime.utcnow())
 
+    COMMANDTIMEOUT = discord.Embed(
+        title='Command timed out',
+        color=EMBEDCOLOR,
+        timestamp=datetime.datetime.utcnow())
+
 
     @staticmethod
     def cardlistToEmbed(cards, uuid):

@@ -119,6 +119,7 @@ class FFTCG(commands.Cog):
             -t, --type - Card Type (Forward, Backup, etc.)
             -g, --category - Card Category (FFCC, X, etc.)
             -p, --power - Card Power (9000, 3000, etc.)
+            -y, --tiny - Print cards in tiny output
 
         Example:
             ?beta --name yuna --type backup --cost 2
@@ -141,6 +142,8 @@ class FFTCG(commands.Cog):
         parser.add_argument('-n', '--name', type=str)
         parser.add_argument('-g', '--category', type=str)
         parser.add_argument('-p', '--power', type=str)
+        parser.add_argument('-y', '--tiny', action="store_true")
+
 
         try:
             args = parser.parse_args(query)
@@ -154,12 +157,34 @@ class FFTCG(commands.Cog):
 
         mycard = grab_cards_beta(self.cards, vars(args))
 
-        if len(mycard) == 0:
-            await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
-        elif len(mycard) == 1:
-            await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid))
+        # Checks for tiny flag to modify output.
+        # If no --tiny then we do our normal selection logic
+        if args.tiny is False:
+            if len(mycard) == 0:
+                await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
+            elif len(mycard) == 1:
+                await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid))
+            else:
+                await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
+
+        # If we do have --tiny flag then we print our cards in tiny
         else:
-            await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
+            output = ''
+
+            if not mycard:
+                output = '```No Match```'
+            else:
+                if len(mycard) >= MAX_QUERY:
+                    output = 'Too many cards please be more specific'
+                else:
+                    for x in mycard:
+                        output = output + prettyCode(x) + "\n"
+
+                if len(output) >= 2000:
+                    output = '```Too many characters for discord, please be more specific````'
+                else:
+                    output = '```' + output + '```'
+            await ctx.channel.send(output)
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
