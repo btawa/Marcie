@@ -26,6 +26,7 @@ class MarcieEmbed:
         color=EMBEDCOLOR,
         timestamp=datetime.datetime.utcnow())
 
+    DISCORD_CACHE_BYPASS = "?1"
 
     @staticmethod
     def cardlistToEmbed(cards, uuid):
@@ -54,14 +55,14 @@ class MarcieEmbed:
                               description=mycard.split('\n', 1)[1],
                               color=EMBEDCOLOR)
         embed.set_footer(text='ID: ' + uuid)
-        embed.set_thumbnail(url=card['image_url'])
+        embed.set_thumbnail(url=card['image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
 
         return embed
 
     @staticmethod
     def cardToImageEmbed(card, uuid):
         embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
-        embed.set_image(url=card[u'image_url'])
+        embed.set_image(url=card[u'image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
         embed.set_footer(text='ID: ' + uuid)
 
         return embed
