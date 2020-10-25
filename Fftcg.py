@@ -19,7 +19,7 @@ class FFTCG(commands.Cog):
         self.codevalidator = re.compile(CODE_VALIDATOR)
 
     @staticmethod
-    async def selectLogic(ctx, bot, cards, uuid, querytype):
+    async def selectLogic(ctx, bot, cards, uuid, querytype, lang):
         embed = MarcieEmbed.cardlistToEmbed(cards, uuid)
         mymessage = await ctx.channel.send(embed=embed)
 
@@ -57,9 +57,9 @@ class FFTCG(commands.Cog):
                 pass
 
             if querytype == "namequery":
-                embed = MarcieEmbed.cardToNameEmbed(mycard, uuid, 'en')
+                embed = MarcieEmbed.cardToNameEmbed(mycard, uuid, lang.lower())
             elif querytype == "imagequery":
-                embed = MarcieEmbed.cardToImageEmbed(mycard, uuid, 'en')
+                embed = MarcieEmbed.cardToImageEmbed(mycard, uuid, lang.lower())
             await mymessage.edit(embed=embed)
         except Exception as err:
             print(err)
@@ -143,7 +143,7 @@ class FFTCG(commands.Cog):
         parser.add_argument('-g', '--category', type=str)
         parser.add_argument('-p', '--power', type=str)
         parser.add_argument('-y', '--tiny', action="store_true")
-        parser.add_argument('-l', '--lang', type=str)
+        parser.add_argument('-l', '--lang', type=str, default='en')
 
 
         try:
@@ -166,7 +166,7 @@ class FFTCG(commands.Cog):
             elif len(mycard) == 1:
                 await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, args.lang.lower()))
             else:
-                await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
+                await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery", args.lang.lower())
 
         # If we do have --tiny flag then we print our cards in tiny
         else:
@@ -301,7 +301,7 @@ class FFTCG(commands.Cog):
 
                 # Else we have to parse through the cards and ask for user input
                 else:
-                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
+                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery", 'en')
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
@@ -377,7 +377,7 @@ class FFTCG(commands.Cog):
 
                 # Else we have to parse through the cards and ask for user input
                 else:
-                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery")
+                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery", 'en')
 
     @commands.command()
     async def paginate(self, ctx, *, name: str):

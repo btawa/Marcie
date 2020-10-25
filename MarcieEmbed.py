@@ -63,6 +63,8 @@ class MarcieEmbed:
                 embed.set_thumbnail(url=card['image_url_jp'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
             except:
                 pass
+        else:
+            pass
 
         return embed
 
@@ -77,6 +79,8 @@ class MarcieEmbed:
                 embed.set_image(url=card[u'image_url_jp'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
             except:
                 pass
+        else:
+            pass
 
         embed.set_footer(text='ID: ' + uuid)
 
