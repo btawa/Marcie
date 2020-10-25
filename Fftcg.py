@@ -57,9 +57,9 @@ class FFTCG(commands.Cog):
                 pass
 
             if querytype == "namequery":
-                embed = MarcieEmbed.cardToNameEmbed(mycard, uuid)
+                embed = MarcieEmbed.cardToNameEmbed(mycard, uuid, 'en')
             elif querytype == "imagequery":
-                embed = MarcieEmbed.cardToImageEmbed(mycard, uuid)
+                embed = MarcieEmbed.cardToImageEmbed(mycard, uuid, 'en')
             await mymessage.edit(embed=embed)
         except Exception as err:
             print(err)
@@ -143,6 +143,7 @@ class FFTCG(commands.Cog):
         parser.add_argument('-g', '--category', type=str)
         parser.add_argument('-p', '--power', type=str)
         parser.add_argument('-y', '--tiny', action="store_true")
+        parser.add_argument('-l', '--lang', type=str)
 
 
         try:
@@ -163,7 +164,7 @@ class FFTCG(commands.Cog):
             if len(mycard) == 0:
                 await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
             elif len(mycard) == 1:
-                await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid))
+                await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, args.lang.lower()))
             else:
                 await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery")
 
@@ -268,7 +269,7 @@ class FFTCG(commands.Cog):
             # Print the card information as an embed
             else:
                 logging.info('\n' + prettyCard(mycard))
-                embed = MarcieEmbed.cardToNameEmbed(mycard, my_uuid)
+                embed = MarcieEmbed.cardToNameEmbed(mycard, my_uuid, 'en')
                 await ctx.channel.send(embed=embed)
 
         # If we don't match a code, the we assume we are searching by name
@@ -295,7 +296,7 @@ class FFTCG(commands.Cog):
                 # If there is only one match, return that card as an embed
                 elif len(mycard) == 1:
                     logging.info('\n' + prettyCard(mycard[0]))
-                    embed = MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid)
+                    embed = MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, 'en')
                     await ctx.channel.send(embed=embed)
 
                 # Else we have to parse through the cards and ask for user input
@@ -344,7 +345,7 @@ class FFTCG(commands.Cog):
             # Print the card information as an embed
             else:
                 logging.info('\n' + prettyCard(mycard))
-                embed = MarcieEmbed.cardToImageEmbed(mycard, my_uuid)
+                embed = MarcieEmbed.cardToImageEmbed(mycard, my_uuid, 'en')
                 await ctx.channel.send(embed=embed)
 
         # If we don't match a code, the we assume we are searching by name
@@ -371,7 +372,7 @@ class FFTCG(commands.Cog):
                 # If there is only one match, return that card as an embed
                 elif len(mycard) == 1:
                     logging.info('\n' + prettyCard(mycard[0]))
-                    embed = MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid)
+                    embed = MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, 'en')
                     await ctx.channel.send(embed=embed)
 
                 # Else we have to parse through the cards and ask for user input
@@ -406,7 +407,7 @@ class FFTCG(commands.Cog):
         my_uuid = uuid.uuid1().hex[:10]
         mycards = grab_cards(name.lower(), self.cards, "Name")
 
-        embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid) for card in mycards]
+        embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid, 'en') for card in mycards]
 
         paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx)
         await paginator.run(embed_list)
