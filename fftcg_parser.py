@@ -121,13 +121,13 @@ def grab_cards_beta(cards, filters):
 
     try:
 
-        f = [f for f in filters.keys() if filters[f] is not None and f != 'tiny' and f != 'lang']
+        f = [f for f in filters.keys() if filters[f] is not None and f != 'tiny' and f != 'lang' and f != "image"]
 
         for key in f:
             our_cards = filterCards(our_cards, filters[key], key)
 
         return our_cards
-        
+
     except Exception as err:
         logging.info(err)
         return our_cards

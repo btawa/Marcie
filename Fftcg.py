@@ -144,6 +144,7 @@ class FFTCG(commands.Cog):
         parser.add_argument('-p', '--power', type=str)
         parser.add_argument('-y', '--tiny', action="store_true")
         parser.add_argument('-l', '--lang', type=str, default='en')
+        parser.add_argument('-i', '--image', action="store_true")
 
 
         try:
@@ -161,12 +162,21 @@ class FFTCG(commands.Cog):
         # Checks for tiny flag to modify output.
         # If no --tiny then we do our normal selection logic
         if args.tiny is False:
-            if len(mycard) == 0:
-                await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
-            elif len(mycard) == 1:
-                await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, args.lang.lower()))
+            if args.image is True:
+                if len(mycard) == 0:
+                    await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
+                elif len(mycard) == 1:
+                    await ctx.channel.send(embed=MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, args.lang.lower()))
+                else:
+                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery", args.lang.lower())
+
             else:
-                await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery", args.lang.lower())
+                if len(mycard) == 0:
+                    await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
+                elif len(mycard) == 1:
+                    await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, args.lang.lower()))
+                else:
+                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery", args.lang.lower())
 
         # If we do have --tiny flag then we print our cards in tiny
         else:
