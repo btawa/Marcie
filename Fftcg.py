@@ -121,7 +121,7 @@ class FFTCG(commands.Cog):
             -p, --power - Card Power (9000, 3000, etc.)
             -y, --tiny - Print cards in tiny output
             -i, --image - Return card as image format
-            -l, --lang, - Language of returned image/thumbnail (en, jp)
+            -l, --lang - Language of returned image/thumbnail (en, jp)
 
         Example:
             ?beta --name yuna --type backup --cost 2

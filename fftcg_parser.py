@@ -324,7 +324,7 @@ def getPack(opusnumber, cards):
         return pack
 
     except Exception as e:
-        print(e)
+        logging.info(e)
         return None
 
 
@@ -334,7 +334,7 @@ def createstrawpoll(pollname, cards):
     options = []
 
     for x in range(len(cards)):
-        options.append(prettyTrice(f"{cards[x]['Name_EN']} {cards[x]['Code']}{cards[x]['Rarity']}"))
+        options.append(f"{cards[x]['Name_EN']} {cards[x]['Code']}{cards[x]['Rarity']}")
 
     req = {'title': pollname, 'options': options}
 
