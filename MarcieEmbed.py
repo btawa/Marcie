@@ -26,7 +26,16 @@ class MarcieEmbed:
         color=EMBEDCOLOR,
         timestamp=datetime.datetime.utcnow())
 
+    PARSERERROR = discord.Embed(
+        title='Unable to parse inputs.  Please check inputs and try again',
+        color=EMBEDCOLOR,
+        timestamp=datetime.datetime.utcnow())
+
     DISCORD_CACHE_BYPASS = "?1"
+
+    @staticmethod
+    def toEmbed(title, text):
+        return discord.Embed(title=title, description=text, color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
 
     @staticmethod
     def cardlistToEmbed(cards, uuid):

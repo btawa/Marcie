@@ -134,9 +134,15 @@ class FFTCG(commands.Cog):
                 ?beta --name "Cid \(Mobius\)"
         """
 
-        query = shlex.split(arg)
+        try:
+            logging.info(f"?beta {arg}")
+            query = shlex.split(arg)
+        except ValueError as err:
+            logging.info(err)
+            await ctx.channel.send(embed=MarcieEmbed.toEmbed('ValueError', str(err)))
+            return
 
-        parser = argparse.ArgumentParser(description="beta argument parser")
+        parser = argparse.ArgumentParser(description="beta argument parser", add_help=False)
         parser.add_argument('-j', '--job', type=str)
         parser.add_argument('-e', '--element', type=str)
         parser.add_argument('-c', '--cost', type=str)
@@ -148,12 +154,10 @@ class FFTCG(commands.Cog):
         parser.add_argument('-l', '--lang', type=str, default='en')
         parser.add_argument('-i', '--image', action="store_true")
 
-
         try:
             args = parser.parse_args(query)
         except SystemExit as err:
-            await ctx.channel.send(
-                '```marcie.py [-j JOB] [-p POWER] [-g CATEGORY] [-e ELEMENT] [-c COST] [-t TYPE] [-n NAME]```')
+            await ctx.channel.send(embed=MarcieEmbed.PARSERERROR)
             return
 
         my_uuid = uuid.uuid1().hex[:10]
