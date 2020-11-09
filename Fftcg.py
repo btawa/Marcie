@@ -39,7 +39,7 @@ class FFTCG(commands.Cog):
         # If we don't receive a message after 10 seconds we send a timeout embed
         except:
             logging.info('Command timed out')
-            embed = MarcieEmbed.COMMANDTIMEOUT
+            embed = MarcieEmbed.COMMANDTIMEOUT()
             embed.set_footer(text='ID: ' + uuid)
             await mymessage.edit(embed=embed)
             return
@@ -161,7 +161,7 @@ class FFTCG(commands.Cog):
         # If no --tiny then we do our normal selection logic
         if args.tiny is False:
             if len(mycard) == 0:
-                await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
+                await ctx.channel.send(embed=MarcieEmbed.NOMATCH())
             elif len(mycard) == 1:
                 await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid))
             else:
@@ -262,7 +262,7 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH
+                embed = MarcieEmbed.NOMATCH()
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
             # Print the card information as an embed
@@ -279,7 +279,7 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH
+                embed = MarcieEmbed.NOMATCH()
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
@@ -288,7 +288,7 @@ class FFTCG(commands.Cog):
 
                 # If there are more than MAX_QUERY cards in the list return too many cards as an embed
                 if len(mycard) >= MAX_QUERY:
-                    embed = MarcieEmbed.TOOMANYCARDS
+                    embed = MarcieEmbed.TOOMANYCARDS()
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
 
@@ -338,7 +338,7 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH
+                embed = MarcieEmbed.NOMATCH()
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
             # Print the card information as an embed
@@ -355,7 +355,7 @@ class FFTCG(commands.Cog):
             # When we don't match return no match as embed
             if not mycard:
                 logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH
+                embed = MarcieEmbed.NOMATCH()
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
 
@@ -364,7 +364,7 @@ class FFTCG(commands.Cog):
 
                 # If there are more than MAX_QUERY cards in the list return too many cards as an embed
                 if len(mycard) >= MAX_QUERY:
-                    embed = MarcieEmbed.TOOMANYCARDS
+                    embed = MarcieEmbed.TOOMANYCARDS()
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
 

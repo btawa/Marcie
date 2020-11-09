@@ -6,25 +6,33 @@ from fftcg_parser import *
 
 class MarcieEmbed:
 
-    NOMATCH = discord.Embed(
-        title='No Match',
-        color=EMBEDCOLOR,
-        imestamp=datetime.datetime.utcnow())
+    @staticmethod
+    def NOMATCH():
+        embed = discord.Embed(title='No Match',
+                              color=EMBEDCOLOR,
+                              timestamp=datetime.datetime.utcnow())
+        return embed
 
-    TOOMANYCARDS = discord.Embed(
-        title='Too many cards please be more specific',
-        color=EMBEDCOLOR,
-        timestamp=datetime.datetime.utcnow())
+    @staticmethod
+    def TOOMANYCARDS():
+        embed = discord.Embed(title='Too many cards please be more specific',
+                              color=EMBEDCOLOR,
+                              timestamp=datetime.datetime.utcnow())
+        return embed
 
-    TOOMANYCHAR = discord.Embed(
-        title='Too many characters please be more specific',
-        color=EMBEDCOLOR,
-        timestamp=datetime.datetime.utcnow())
+    @staticmethod
+    def TOOMANYCHAR():
+        embed = discord.Embed(title='Too many characters please be more specific',
+                              color=EMBEDCOLOR,
+                              timestamp=datetime.datetime.utcnow())
+        return embed
 
-    COMMANDTIMEOUT = discord.Embed(
-        title='Command timed out',
-        color=EMBEDCOLOR,
-        timestamp=datetime.datetime.utcnow())
+    @staticmethod
+    def COMMANDTIMEOUT():
+        embed = discord.Embed(title='Command timed out',
+                              color=EMBEDCOLOR,
+                              timestamp=datetime.datetime.utcnow())
+        return embed
 
     DISCORD_CACHE_BYPASS = "?1"
 
