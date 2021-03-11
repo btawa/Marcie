@@ -121,13 +121,13 @@ def grab_cards_beta(cards, filters):
 
     try:
 
-        f = [f for f in filters.keys() if filters[f] is not None and f != 'tiny']
+        f = [f for f in filters.keys() if filters[f] is not None and f != 'tiny' and f != 'lang' and f != "image"]
 
         for key in f:
             our_cards = filterCards(our_cards, filters[key], key)
 
         return our_cards
-        
+
     except Exception as err:
         logging.info(err)
         return our_cards
@@ -181,8 +181,9 @@ def prettyCard(card):
 
     line3 = ''
 
-    for line in card[u'Text_EN']:
-        line3 += f"{line}\n"
+    if card['Text_EN']:
+        for line in card[u'Text_EN']:
+            line3 += f"{line}\n"
     line4 = f"{card[u'Power']}"
 
     # Modify return string based on whether card has power or not
@@ -265,81 +266,6 @@ def loadJson(path):
         return cards_list
 
 
-def prettyTrice(string):
-
-    # Weird bracket removal:
-    string = string.replace(u"\u300a", '(')
-    string = string.replace(u"\u300b", ')')
-    string = string.replace('&middot;', u"\u00B7")
-
-    # Replace Element Logos
-    string = string.replace(u"\u571F", 'Earth')
-    string = string.replace(u"\u6c34", 'Water')
-    string = string.replace(u"\u706b", 'Fire')
-    string = string.replace(u"\u98a8", 'Wind')
-    string = string.replace(u"\u6c37", 'Ice')
-    string = string.replace(u"\u5149", 'Light')
-    string = string.replace(u"\u95c7", 'Dark')
-    string = string.replace(u"\u96f7", 'Lightning')
-
-    # Replace EX Burst
-    string = string.replace('[[ex]]', '')
-    string = string.replace('[[/]]', '')
-    string = string.replace('EX BURST', '[EX BURST]')
-
-    # Special Switch
-    string = string.replace(u"\u300a"u"\u0053"u"\u300b", '[Special]')
-
-    # Bubble used for Multicard and Ex_Burst
-    string = string.replace(u'\u25CB', 'True')
-    string = string.replace(u'\u3007', 'False')
-
-    # Horizontal Bar
-    string = string.replace(u'\u2015', '')
-
-    # Formatting Fixes
-    string = string.replace('[[', '<')
-    string = string.replace(']]', '>')
-    string = string.replace('<s>', '')
-    string = string.replace('</>', '')
-    string = string.replace('<i>', '')
-    string = string.replace('<br> ', '\n')
-    string = string.replace('<br>', '\n')
-
-    # Formatting Fixes
-    string = string.replace('[[', '<')
-    string = string.replace(']]', '>')
-    string = string.replace('<s>', '')
-    string = string.replace('</>', '')
-    string = string.replace('<i>', '')
-    string = string.replace('<br> ', '\n')
-    string = string.replace('<br>', '\n')
-
-    # Replace Fullwidth Numbers with normal numbers
-    string = string.replace(u"\uFF11", '1')
-    string = string.replace(u"\uFF12", '2')
-    string = string.replace(u"\uFF13", '3')
-    string = string.replace(u"\uFF14", '4')
-    string = string.replace(u"\uFF15", '5')
-    string = string.replace(u"\uFF16", '6')
-    string = string.replace(u"\uFF17", '7')
-    string = string.replace(u"\uFF18", '8')
-    string = string.replace(u"\uFF19", '9')
-    string = string.replace(u"\uFF10", '0')
-    string = string.replace(u"\u2015", "-") # Damage 5 from Opus X cards
-    string = string.replace(u"\u00fa", "u")  # Cuchulainn u with tilda
-
-    string = string.replace(u"\u4E00"u"\u822C", 'Generic')  # Fixes #1
-
-    # Tap Symbol
-    string = string.replace(u"\u30C0"u"\u30EB", 'Dull')
-
-    # Double quotes with YURI?
-    string = string.replace("\"\"", '\"')
-
-    return string
-
-
 def getPack(opusnumber, cards):
 
     mycards = []
@@ -398,7 +324,7 @@ def getPack(opusnumber, cards):
         return pack
 
     except Exception as e:
-        print(e)
+        logging.info(e)
         return None
 
 
@@ -408,7 +334,7 @@ def createstrawpoll(pollname, cards):
     options = []
 
     for x in range(len(cards)):
-        options.append(prettyTrice(f"{cards[x]['Name_EN']} {cards[x]['Code']}{cards[x]['Rarity']}"))
+        options.append(f"{cards[x]['Name_EN']} {cards[x]['Code']}{cards[x]['Rarity']}")
 
     req = {'title': pollname, 'options': options}
 
@@ -420,144 +346,4 @@ def createstrawpoll(pollname, cards):
     except:
         print('Exception with strawpoll')
         return
-
-
-# This function is used to convert information from ffdecks JSON
-# to marcieapi JSON.  FFDecks uses different characters to denote
-# different things.
-
-def ffdeckstostring(string):
-    string = string.replace('{s}', '[Special]')
-    string = string.replace('{a}', '(Water)')
-    string = string.replace('{w}', '(Wind)')
-    string = string.replace('{e}', '(Earth)')
-    string = string.replace('{f}', '(Fire)')
-    string = string.replace('{i}', '(Ice)')
-    string = string.replace('{l}', '(Lightning)')
-    string = string.replace('{d}', '(Dull)')
-
-    string = string.replace('{x}', '[EX BURST]')
-    string = string.replace('{0}', '(0)')
-    string = string.replace('{1}', '(1)')
-    string = string.replace('{2}', '(2)')
-    string = string.replace('{3}', '(3)')
-    string = string.replace('{4}', '(4)')
-    string = string.replace('{5}', '(5)')
-    string = string.replace('{6}', '(6)')
-    string = string.replace('{7}', '(7)')
-    string = string.replace('{8}', '(8)')
-    string = string.replace('{9}', '(9)')
-
-    string = string.replace('*', '')
-    string = string.replace('%', '')
-    string = string.replace('~', '')
-    string = string.replace(u"\u2015", "-") # Damage 5 from Opus X cards
-    string = string.replace(u"\u00fa", "u")  # Cuchulainn u with tilda
-
-    return string
-
-
-# This function converts ffdecks inputs to marcieapi output
-
-def ffdeckstomarcieapi(listofdicts):
-
-    converted = []
-
-    for x in range(0,len(listofdicts)):
-        converted.append({})
-
-    for card in range(0, len(listofdicts)):
-        converted[card]['Category_1'] = ffdeckstostring(listofdicts[card]['category'])
-        converted[card]['Code'] = ffdeckstostring(listofdicts[card]['serial_number'])
-        converted[card]['Cost'] = listofdicts[card]['cost']
-        converted[card]['Element'] = ffdeckstostring(listofdicts[card]['element'])
-        converted[card]['Ex_Burst'] = listofdicts[card]['is_ex_burst']
-        converted[card]['Job_EN'] = ffdeckstostring(listofdicts[card]['job'])
-        converted[card]['Multicard'] = listofdicts[card]['is_multi_playable']
-        converted[card]['Name_EN'] = ffdeckstostring(listofdicts[card]['name'])
-        converted[card]['Power'] = listofdicts[card]['power']
-        converted[card]['Rarity'] = ffdeckstostring(listofdicts[card]['rarity'])[0]
-
-        if re.search(r'^PR-' , converted[card]['Code']):
-            converted[card]['Set'] = None
-        else:
-            setnumber = int(re.search(r'^\d+', converted[card]['Code']).group(0))
-            converted[card]['Set'] = 'Opus ' + roman.toRoman(setnumber)
-        converted[card]['Type_EN'] = ffdeckstostring(listofdicts[card]['type'])
-        converted[card]['Text_EN'] = []
-
-        for line in range(0, len(listofdicts[card]['abilities'])):
-            converted[card]['Text_EN'].append(ffdeckstostring(str(listofdicts[card]['abilities'][line])))
-    return converted
-
-
-def addimageurltojson(cards_list, image_list):
-    for card in cards_list:
-        for url in image_list:
-            if re.search(r'\/', card['Code']):
-                if card['Code'].split('/')[0] in url:
-                    card['image_url'] = url
-
-            elif card['Code'] == re.search(r'(PR-\d{3}|\d+-\d{3})', url).group(1):
-                card['image_url'] = url
-
-    return cards_list
-
-
-# This function makes a cards JSON from square and writes it to cards.json in the local directory
-
-def squaretomarcieapi(cards):
-
-    mykeys = ('Rarity', 'Element', 'Name_EN', 'Cost', 'Multicard', 'Type_EN', 'Category_1', 'Text_EN', 'Job_EN', 'Power',
-              'Ex_Burst', 'Set', 'Code')
-
-    for card in cards:
-        for key in list(card):
-            if key in mykeys:
-                if key == "Multicard" or key == "Ex_Burst":
-                    card[key] = prettyTrice(card[key])
-                    if card[key] == "True":
-                        card[key] = True
-                    else:
-                        card[key] = False
-                elif key == 'Power':
-                    if card[key] == "":
-                        card[key] = None
-                    elif card[key] == " ":
-                        card[key] = None
-                    elif re.search(r'\u2015', card[key]):
-                        card[key] = None
-                    elif re.search(r'\－', card[key]):
-                        card[key] = None
-                    else:
-                        card[key] = int(card[key])
-                elif key == "Rarity":
-                    card[key] = card[key][0]
-                elif key == "Code":
-                    if re.search(r'PR-\d{3}', card[key]):
-                        card[key] = card[key]
-                    elif re.search(r'\/', card[key]):
-                        card[key] = card[key]
-                    elif re.search(r'S', card[key]):
-                        card['Rarity'] = 'S'
-                        card[key] = card[key][:-1]
-                    else:
-                        card[key] = card[key][:-1]
-                elif key == "Cost":
-                    card[key] = int(card[key])
-                else:
-                    card[key] = prettyTrice(card[key])
-            else:
-                del card[key]
-
-        card['Text_EN'] = card['Text_EN'].split('\n')
-
-        for line in range(len(card['Text_EN'])):
-            card['Text_EN'][line] = re.sub(r'^\s+', '', card['Text_EN'][line])
-            card['Text_EN'][line] = re.sub(r'\s+$', '', card['Text_EN'][line])
-
-    myjson = json.dumps(cards)
-    mydict = json.loads(myjson)
-
-    return mydict
 

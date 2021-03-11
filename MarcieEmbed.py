@@ -34,7 +34,16 @@ class MarcieEmbed:
                               timestamp=datetime.datetime.utcnow())
         return embed
 
+    PARSERERROR = discord.Embed(
+        title='Unable to parse inputs.  Please check inputs and try again',
+        color=EMBEDCOLOR,
+        timestamp=datetime.datetime.utcnow())
+
     DISCORD_CACHE_BYPASS = "?1"
+
+    @staticmethod
+    def toEmbed(title, text):
+        return discord.Embed(title=title, description=text, color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
 
     @staticmethod
     def cardlistToEmbed(cards, uuid):
@@ -55,7 +64,7 @@ class MarcieEmbed:
         return embed
 
     @staticmethod
-    def cardToNameEmbed(card, uuid):
+    def cardToNameEmbed(card, uuid, lang):
         mycard = prettyCard(card)
 
         embed = discord.Embed(title=mycard.split('\n', 1)[0],
@@ -63,14 +72,33 @@ class MarcieEmbed:
                               description=mycard.split('\n', 1)[1],
                               color=EMBEDCOLOR)
         embed.set_footer(text='ID: ' + uuid)
-        embed.set_thumbnail(url=card['image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+
+        if lang == 'en':
+            embed.set_thumbnail(url=card['image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+        elif lang == 'jp':
+            try:
+                embed.set_thumbnail(url=card['image_url_jp'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+            except:
+                pass
+        else:
+            pass
 
         return embed
 
     @staticmethod
-    def cardToImageEmbed(card, uuid):
+    def cardToImageEmbed(card, uuid, lang):
         embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
-        embed.set_image(url=card[u'image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+
+        if lang == 'en':
+            embed.set_image(url=card[u'image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+        elif lang == 'jp':
+            try:
+                embed.set_image(url=card[u'image_url_jp'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+            except:
+                pass
+        else:
+            pass
+
         embed.set_footer(text='ID: ' + uuid)
 
         return embed
