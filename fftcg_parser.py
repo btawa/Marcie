@@ -110,8 +110,6 @@ def grab_cards_beta(cards, filters):
                 elif qtype == 'element':
                     if req.lower() == card[u'Element'].lower():
                         filteredcards.append(card)
-                elif qtype == 'tiny':
-                    pass
 
             return filteredcards
 
@@ -121,7 +119,8 @@ def grab_cards_beta(cards, filters):
 
     try:
 
-        f = [f for f in filters.keys() if filters[f] is not None and f != 'tiny' and f != 'lang' and f != "image"]
+        exclude_filters = ['tiny', 'lang', 'image', 'paginate']
+        f = [f for f in filters.keys() if filters[f] is not None and f not in exclude_filters]
 
         for key in f:
             our_cards = filterCards(our_cards, filters[key], key)

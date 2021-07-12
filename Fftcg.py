@@ -122,6 +122,7 @@ class FFTCG(commands.Cog):
             -y, --tiny - Print cards in tiny output
             -i, --image - Return card as image format
             -l, --lang - Language of returned image/thumbnail (en, jp)
+            -a, --paginate - Returned cards will provide pagination embed
 
         Example:
             ?beta --name yuna --type backup --cost 2
@@ -153,6 +154,7 @@ class FFTCG(commands.Cog):
         parser.add_argument('-y', '--tiny', action="store_true")
         parser.add_argument('-l', '--lang', type=str, default='en')
         parser.add_argument('-i', '--image', action="store_true")
+        parser.add_argument('-a', '--paginate', action="store_true")
 
         try:
             args = parser.parse_args(query)
@@ -175,6 +177,11 @@ class FFTCG(commands.Cog):
                     await ctx.channel.send(embed=MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, args.lang.lower()))
                 else:
                     await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery", args.lang.lower())
+
+            elif args.paginate is True:
+                embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid, 'en') for card in mycard]
+                paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx)
+                await paginator.run(embed_list)
 
             else:
                 if len(mycard) == 0:
