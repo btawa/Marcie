@@ -432,7 +432,8 @@ class FFTCG(commands.Cog):
 
         embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid, 'en') for card in mycards]
 
-        paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx)
+        paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx, remove_reactions=True)
+
         await paginator.run(embed_list)
 
     @tiny.error
