@@ -11,6 +11,11 @@ from constants import EMBEDCOLOR, MAX_QUERY, CODE_VALIDATOR
 from MarcieEmbed import MarcieEmbed
 
 
+class Arguments(argparse.ArgumentParser):
+    def error(self, message):
+        raise RuntimeError(message)
+
+
 class FFTCG(commands.Cog):
     def __init__(self, bot, api):
         self.bot = bot
@@ -143,7 +148,7 @@ class FFTCG(commands.Cog):
             await ctx.channel.send(embed=MarcieEmbed.toEmbed('ValueError', str(err)))
             return
 
-        parser = argparse.ArgumentParser(description="beta argument parser", add_help=False)
+        parser = Arguments(description="beta argument parser", add_help=False)
         parser.add_argument('-j', '--job', type=str)
         parser.add_argument('-e', '--element', type=str)
         parser.add_argument('-c', '--cost', type=str)
@@ -158,8 +163,8 @@ class FFTCG(commands.Cog):
 
         try:
             args = parser.parse_args(query)
-        except SystemExit as err:
-            await ctx.channel.send(embed=MarcieEmbed.PARSERERROR)
+        except RuntimeError as e:
+            await ctx.channel.send(f'```{parser.format_usage()}\n{e}```')
             return
 
         my_uuid = uuid.uuid1().hex[:10]
