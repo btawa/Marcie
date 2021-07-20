@@ -175,6 +175,8 @@ class FFTCG(commands.Cog):
                     await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
                 elif len(mycard) == 1:
                     await ctx.channel.send(embed=MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, args.lang.lower()))
+                elif len(mycard) >= MAX_QUERY:
+                    await ctx.channel.send(embed=MarcieEmbed.TOOMANYCARDS())
                 else:
                     await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery", args.lang.lower())
 
@@ -188,6 +190,8 @@ class FFTCG(commands.Cog):
                     await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
                 elif len(mycard) == 1:
                     await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, args.lang.lower()))
+                elif len(mycard) >= MAX_QUERY:
+                    await ctx.channel.send(embed=MarcieEmbed.TOOMANYCARDS())
                 else:
                     await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery", args.lang.lower())
 
