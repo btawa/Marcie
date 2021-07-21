@@ -145,7 +145,7 @@ def prettyCode(card):
     else:
         multicard = ''
 
-    if card['Rarity'] == "P":
+    if card['Rarity'] in ["P", "B"]:
         line1 = f"{card['Code']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
     elif re.search(r'\/', card['Code']):
         line1 = f"{card['Code']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
@@ -166,7 +166,7 @@ def prettyCard(card):
         multicard = ''
 
     #  Prepping different lines for return
-    if card['Rarity'] == "P":
+    if card['Rarity'] in ["P", "B"]:
         line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
     elif re.search(r'\/', card['Code']):
         line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
