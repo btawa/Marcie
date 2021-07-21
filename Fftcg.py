@@ -114,7 +114,7 @@ class FFTCG(commands.Cog):
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
-    async def beta(self, ctx, *, arg):
+    async def adv(self, ctx, *, arg):
 
         """This command allows card querying by providing arguments to filter off of.
             -n, --name - Card Name (Yuna, Vaelfor, etc. (takes regex))
@@ -130,25 +130,25 @@ class FFTCG(commands.Cog):
             -a, --paginate - Returned cards will provide pagination embed
 
         Example:
-            ?beta --name yuna --type backup --cost 2
+            ?adv --name yuna --type backup --cost 2
 
         Known Caveats:
             - If using card name or card job which has spaces please surround argument in quotes:
-                ?beta --name "Cloud of Darkness" --type forward --cost 5
+                ?adv --name "Cloud of Darkness" --type forward --cost 5
 
             - Special regex characters need to be escaped.:
-                ?beta --name "Cid \(Mobius\)"
+                ?adv --name "Cid \(Mobius\)"
         """
 
         try:
-            logging.info(f"?beta {arg}")
+            logging.info(f"?adv {arg}")
             query = shlex.split(arg)
         except ValueError as err:
             logging.info(err)
             await ctx.channel.send(embed=MarcieEmbed.toEmbed('ValueError', str(err)))
             return
 
-        parser = Arguments(description="beta argument parser", add_help=False)
+        parser = Arguments(description="Advanced argument parser", add_help=False)
         parser.add_argument('-j', '--job', type=str)
         parser.add_argument('-e', '--element', type=str)
         parser.add_argument('-c', '--cost', type=str)
@@ -446,7 +446,7 @@ class FFTCG(commands.Cog):
         await paginator.run(embed_list)
 
     @tiny.error
-    @beta.error
+    @adv.error
     @pack.error
     @name.error
     @image.error

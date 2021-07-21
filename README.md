@@ -47,7 +47,7 @@ Marcie has some functionality which utilizes `Manage Messages` specifically pagi
 ## Commands  
 
     FFTCG: 
-        beta This command allows card querying by providing arguments to filter... 
+        adv This command allows card querying by providing arguments to filter... 
         image Returns image of card. Takes code or name. Accepts regex. 
         name Returns text of card. Takes code or name. Accepts regex. 
         pack Returns a randomized pack based on the opus you provide. 
@@ -125,7 +125,7 @@ This command returns a randomized pack of the requested FFTCG set.
     Example:  
         ?pack 5
 
-### ?beta
+### ?adv
 This command allows card querying by providing arguments to filter off of.
 
     Filters:
@@ -138,13 +138,13 @@ This command allows card querying by providing arguments to filter off of.
     -p, --power - Card Power (9000, 3000, etc.)
 
     Example:
-        ?beta --name yuna --type backup --cost 2
+        ?adv --name yuna --type backup --cost 2
 #### Known Caveats
 - If using card name or card job which has spaces please surround argument in quotes.
-    - `?beta --name "Cloud of Darkness" --type forward --cost 5`
+    - `?adv --name "Cloud of Darkness" --type forward --cost 5`
 
 - Special regex characters need to be escaped.
-    - `?beta --name "Cid \(Mobius\)"`
+    - `?adv --name "Cid \(Mobius\)"`
 
 ### ?paginate
 Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
