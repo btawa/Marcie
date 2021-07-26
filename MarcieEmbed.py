@@ -6,6 +6,8 @@ from fftcg_parser import *
 
 class MarcieEmbed:
 
+    DISCORD_CACHE_BYPASS = "?1"
+
     @staticmethod
     def NOMATCH():
         embed = discord.Embed(title='No Match',
@@ -34,12 +36,12 @@ class MarcieEmbed:
                               timestamp=datetime.datetime.utcnow())
         return embed
 
-    PARSERERROR = discord.Embed(
-        title='Unable to parse inputs.  Please check inputs and try again',
-        color=EMBEDCOLOR,
-        timestamp=datetime.datetime.utcnow())
-
-    DISCORD_CACHE_BYPASS = "?1"
+    @staticmethod
+    def PARSERERROR():
+        embed = discord.Embed(title='Unable to parse inputs.  Please check inputs and try again',
+                              color=EMBEDCOLOR,
+                              timestamp=datetime.datetime.utcnow())
+        return embed
 
     @staticmethod
     def toEmbed(title, text):
