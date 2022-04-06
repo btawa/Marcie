@@ -445,6 +445,20 @@ class FFTCG(commands.Cog):
 
         await paginator.run(embed_list)
 
+    @commands.command()
+    async def refresh(self, ctx):
+
+        """This function enables the ability to refresh the card list the bot uses without restarting the bot
+        """
+
+        if ctx.message.author.id == 137703200458407936:
+            self.cards = loadJson(self.api)
+            embed = MarcieEmbed.toEmbed("Cards Refreshed", "Refreshed cards from MarcieAPI")
+            await ctx.channel.send(embed=embed)
+        else:
+            embed = MarcieEmbed.toEmbed("Invalid User", f"You are not Japnix")
+            await ctx.channel.send(embed=embed)
+
     @tiny.error
     @adv.error
     @pack.error
