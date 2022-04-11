@@ -9,6 +9,7 @@ import shlex
 import argparse
 from constants import EMBEDCOLOR, MAX_QUERY, CODE_VALIDATOR
 from MarcieEmbed import MarcieEmbed
+from ffdecks_deck_parser import ffdecksParse
 
 
 class Arguments(argparse.ArgumentParser):
@@ -459,6 +460,27 @@ class FFTCG(commands.Cog):
             embed = MarcieEmbed.toEmbed("Invalid User", f"You are not Japnix")
             await ctx.channel.send(embed=embed)
 
+    @commands.command()
+    async def ffdeck(self, ctx, url):
+        """ This function returns an ascii decklist of an ffdecks deck url (https://ffdecks.com/deck/<deckid>)
+        """
+
+        print(url)
+        if re.search(r'.*ffdecks.com/deck/\d+.*', url):
+            parser = ffdecksParse(url)
+            ascii_list = parser.ascii_decklist
+
+            if ascii_list:
+                await ctx.channel.send('```' + ascii_list + '```')
+            else:
+                embed = MarcieEmbed.toEmbed("Bad Request", "This request didn't return a decklist")
+                await ctx.channel.send(embed=embed)
+
+        else:
+            embed = MarcieEmbed.toEmbed("Bad Request", "This request didn't return a decklist")
+            await ctx.channel.send(embed=embed)
+
+    @ffdeck.error
     @tiny.error
     @adv.error
     @pack.error
