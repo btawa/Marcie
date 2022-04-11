@@ -465,7 +465,6 @@ class FFTCG(commands.Cog):
         """ This function returns an ascii decklist of an ffdecks deck url (https://ffdecks.com/deck/<deckid>)
         """
 
-        print(url)
         if re.search(r'.*ffdecks.com/deck/\d+.*', url):
             parser = ffdecksParse(url)
             ascii_list = parser.ascii_decklist
