@@ -62,21 +62,26 @@ class DeckStorage(commands.Cog):
 
     @commands.command()
     async def lookup(self, ctx, user):
-        cursor = self.decks.find({'user_name': user})
-        doc_count = self.decks.count_documents(query)
 
-        if doc_count:
-            await ctx.channel.send("```Can't find this users data```")
-        else:
-            output = ""
-            for deck in cursor:
-                output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
+        try:
+            cursor = self.decks.find({'user_name': user})
+            query = {'user_name': user}
+            doc_count = self.decks.count_documents(query)
 
-            title = f"{user}'s Decks"
+            if doc_count == 0:
+                await ctx.channel.send("```Can't find this users data```")
+            else:
+                output = ""
+                for deck in cursor:
+                    output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
 
-            embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+                title = f"{user}'s Decks"
 
-            await ctx.channel.send(embed=embed)
+                embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+
+                await ctx.channel.send(embed=embed)
+        except Exception as e:
+            logging.info(str(e))
 
     @commands.command()
     async def flushdecks(self, ctx):
