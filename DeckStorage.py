@@ -5,7 +5,7 @@ import re
 import discord
 import Constants
 import datetime
-import logging
+
 
 class DeckStorage(commands.Cog):
     def __init__(self, bot : commands.Bot, mongoaddress):
@@ -16,6 +16,13 @@ class DeckStorage(commands.Cog):
 
     @commands.command()
     async def save(self, ctx, url):
+
+        """This function saves a ffdecks link to the database to share with others
+
+        It takes in input url which must be in the format:
+            https://ffdecks.com/deck/<deck id>
+        """
+
         user_id = ctx.message.author.id
         user_name = ctx.message.author.name
 
@@ -39,11 +46,15 @@ class DeckStorage(commands.Cog):
 
     @commands.command()
     async def mydecks(self, ctx):
+
+        """This function returns the users saved decks
+        """
+
         user_id = ctx.message.author.id
 
         query = {'user_id_who_saved': user_id }
         cursor = self.db.decks.find(query)
-        doc_count = self.decks.count_documents(query)
+        doc_count = self.decks.count_documents(query)  # This is a requirement of mongodb 4.0
 
         if doc_count == 0:
             await ctx.channel.send(f"```You have no decks```")
@@ -51,7 +62,7 @@ class DeckStorage(commands.Cog):
         else:
             output = ""
             for deck in cursor:
-                output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
+                output += f"[{deck['deck_name']}]({deck['url']})\n"
 
             title = f"{ctx.message.author.name}'s Decks"
 
@@ -59,32 +70,41 @@ class DeckStorage(commands.Cog):
 
             await ctx.channel.send(embed=embed)
 
-
     @commands.command()
     async def lookup(self, ctx, user):
 
-        try:
-            cursor = self.decks.find({'user_name': user})
-            query = {'user_name': user}
-            doc_count = self.decks.count_documents(query)
+        """ This function allows users to look up other peoples saved decks.
 
-            if doc_count == 0:
-                await ctx.channel.send("```Can't find this users data```")
-            else:
-                output = ""
-                for deck in cursor:
-                    output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
+        It takes input user which is the first part of the persons discord account name.
 
-                title = f"{user}'s Decks"
+        Example:
+            Account Name: Yuna#1234
+            ?lookup Yuna
+        """
 
-                embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+        cursor = self.decks.find({'user_name': user})
+        query = {'user_name': user}
+        doc_count = self.decks.count_documents(query)
 
-                await ctx.channel.send(embed=embed)
-        except Exception as e:
-            logging.info(str(e))
+        if doc_count == 0:
+            await ctx.channel.send("```Can't find this users data```")
+        else:
+            output = ""
+            for deck in cursor:
+                output += f"[{deck['deck_name']}]({deck['url']})\n"
+
+            title = f"{user}'s Decks"
+
+            embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+
+            await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def flushdecks(self, ctx):
+
+        """This command flushes all decks for command user.
+        """
+
         user_id = ctx.message.author.id
 
         query = {'user_id_who_saved': user_id}
@@ -113,6 +133,15 @@ class DeckStorage(commands.Cog):
 
     @commands.command()
     async def delete(self, ctx, deck_name):
+
+        """This function deletes a users single deck from the database
+
+        It takes the input deck_name which is the name of the deck in the DB.
+
+        Example:
+            ?delete "Mono Wind"
+        """
+
         user_id = ctx.message.author.id
 
         query = {'user_id_who_saved': user_id, 'deck_name': deck_name }
