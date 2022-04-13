@@ -5,7 +5,7 @@ import re
 import discord
 import Constants
 import datetime
-
+import logging
 
 class DeckStorage(commands.Cog):
     def __init__(self, bot : commands.Bot, mongoaddress):
@@ -39,24 +39,28 @@ class DeckStorage(commands.Cog):
 
     @commands.command()
     async def mydecks(self, ctx):
-        user_id = ctx.message.author.id
 
-        query = {'user_id_who_saved': user_id }
-        cursor = self.db.decks.find(query)
+        try:
+            user_id = ctx.message.author.id
 
-        if cursor.count() == 0:
-            await ctx.channel.send(f"```You have no decks```")
-            return
-        else:
-            output = ""
-            for deck in cursor:
-                output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
+            query = {'user_id_who_saved': user_id }
+            cursor = self.db.decks.find(query)
 
-            title = f"{ctx.message.author.name}'s Decks"
+            if cursor.count() == 0:
+                await ctx.channel.send(f"```You have no decks```")
+                return
+            else:
+                output = ""
+                for deck in cursor:
+                    output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
 
-            embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+                title = f"{ctx.message.author.name}'s Decks"
 
-            await ctx.channel.send(embed=embed)
+                embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+
+                await ctx.channel.send(embed=embed)
+        except Exception as e:
+            logging.info(e)
 
     @commands.command()
     async def lookup(self, ctx, user):
