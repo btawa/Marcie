@@ -39,34 +39,33 @@ class DeckStorage(commands.Cog):
 
     @commands.command()
     async def mydecks(self, ctx):
+        user_id = ctx.message.author.id
 
-        try:
-            user_id = ctx.message.author.id
+        query = {'user_id_who_saved': user_id }
+        cursor = self.db.decks.find(query)
+        doc_count = self.decks.count_documents(query)
 
-            query = {'user_id_who_saved': user_id }
-            cursor = self.db.decks.find(query)
+        if doc_count == 0:
+            await ctx.channel.send(f"```You have no decks```")
+            return
+        else:
+            output = ""
+            for deck in cursor:
+                output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
 
-            if cursor.count() == 0:
-                await ctx.channel.send(f"```You have no decks```")
-                return
-            else:
-                output = ""
-                for deck in cursor:
-                    output += f"\"{deck['deck_name']}\" - {deck['url']}\n"
+            title = f"{ctx.message.author.name}'s Decks"
 
-                title = f"{ctx.message.author.name}'s Decks"
+            embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
 
-                embed = discord.Embed(title=title, description=output, color=Constants.EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
+            await ctx.channel.send(embed=embed)
 
-                await ctx.channel.send(embed=embed)
-        except Exception as e:
-            logging.info(e)
 
     @commands.command()
     async def lookup(self, ctx, user):
         cursor = self.decks.find({'user_name': user})
+        doc_count = self.decks.count_documents(query)
 
-        if cursor.count() == 0:
+        if doc_count:
             await ctx.channel.send("```Can't find this users data```")
         else:
             output = ""
