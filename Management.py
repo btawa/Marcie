@@ -4,7 +4,7 @@ import datetime
 import pymongo
 import discord
 import logging
-from constants import EMBEDCOLOR
+from Constants import EMBEDCOLOR
 
 
 class Management(commands.Cog):

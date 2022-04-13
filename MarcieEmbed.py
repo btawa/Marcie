@@ -1,7 +1,7 @@
 import discord
 import datetime
-from constants import EMBEDCOLOR
-from fftcg_parser import *
+from Constants import EMBEDCOLOR
+from FftcgParser import *
 
 
 class MarcieEmbed:

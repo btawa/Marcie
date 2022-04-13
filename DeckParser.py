@@ -3,7 +3,7 @@ import json
 import re
 
 
-class ffdecksParse:
+class DeckParser:
     def __init__(self, url):
         # inputs
         self.url = url

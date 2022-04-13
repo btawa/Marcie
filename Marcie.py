@@ -5,6 +5,7 @@ import pymongo
 import argparse
 from Fftcg import FFTCG
 from Management import Management
+from DeckStorage import DeckStorage
 
 __author__ = "Japnix"
 
@@ -49,6 +50,7 @@ description = '''Marcie FFTCG Bot
 bot = commands.Bot(command_prefix=get_pre, description=description)
 bot.add_cog(FFTCG(bot, API_COMPLETE))
 bot.add_cog(Management(bot, args.db))
+bot.add_cog(DeckStorage(bot, args.db))
 
 
 # This function handles when the bot is removed from a guild under normal operation

@@ -1,15 +1,15 @@
 from discord.ext import commands
 import DiscordUtils
 import discord
-from fftcg_parser import *
+from FftcgParser import *
 import uuid
 import logging
 import re
 import shlex
 import argparse
-from constants import EMBEDCOLOR, MAX_QUERY, CODE_VALIDATOR
+from Constants import EMBEDCOLOR, MAX_QUERY, CODE_VALIDATOR
 from MarcieEmbed import MarcieEmbed
-from ffdecks_deck_parser import ffdecksParse
+from DeckParser import DeckParser
 
 
 class Arguments(argparse.ArgumentParser):
@@ -466,7 +466,7 @@ class FFTCG(commands.Cog):
         """
 
         if re.search(r'.*ffdecks.com/deck/\d+.*', url):
-            parser = ffdecksParse(url)
+            parser = DeckParser(url)
             ascii_list = parser.ascii_decklist
 
             if ascii_list:
