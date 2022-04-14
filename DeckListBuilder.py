@@ -2,7 +2,7 @@ import io
 from PIL import Image
 import requests
 from io import BytesIO
-import urllib.request, json
+import json
 import math
 import re
 
@@ -73,9 +73,10 @@ class DeckListBuilder:
 
     def get_deck(self, deck_id):
         deck_url = "https://ffdecks.com/api/deck?deck_id=" + deck_id
-        with urllib.request.urlopen(deck_url) as url:
-            data = json.loads(url.read().decode())
-            return data
+
+        data = requests.get(deck_url)
+        data = json.loads(data.content)
+        return data
 
     def sort_deck_data(self):
         deck_data = self.get_deck(self.deck_id)
