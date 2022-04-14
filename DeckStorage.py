@@ -5,10 +5,12 @@ import re
 import discord
 import Constants
 import datetime
-
+from DeckListBuilder import DeckListBuilder
+import logging
+import time
 
 class DeckStorage(commands.Cog):
-    def __init__(self, bot : commands.Bot, mongoaddress):
+    def __init__(self, bot: commands.Bot, mongoaddress):
         self.bot = bot
         self.mongoclient = pymongo.MongoClient(mongoaddress)
         self.db = self.mongoclient['MarcieProd']
@@ -154,3 +156,14 @@ class DeckStorage(commands.Cog):
             body = f"```\"{deck_name}\" was not found in the database.```"
 
         await ctx.channel.send(body)
+
+    @commands.command()
+    async def decklist(self, ctx, url):
+        parser = DeckParser(url)
+        try:
+            if parser.deck:
+                deck_list_image = DeckListBuilder(parser.deck_id)
+                filename = int(time.time())
+                await ctx.channel.send(file=discord.File(fp=deck_list_image.bytes_image, filename=f'{filename}.jpg'))
+        except Exception as e:
+            logging.info(e)
