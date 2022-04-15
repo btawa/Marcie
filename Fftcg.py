@@ -412,6 +412,7 @@ class FFTCG(commands.Cog):
                 else:
                     await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery", 'en')
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def paginate(self, ctx, *, name: str):
         """Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
@@ -460,6 +461,7 @@ class FFTCG(commands.Cog):
             embed = MarcieEmbed.toEmbed("Invalid User", f"You are not Japnix")
             await ctx.channel.send(embed=embed)
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def ffdeck(self, ctx, url):
         """ This function returns an ascii decklist of an ffdecks deck url (https://ffdecks.com/deck/<deckid>)
@@ -486,6 +488,7 @@ class FFTCG(commands.Cog):
     @name.error
     @image.error
     @paginate.error
+    @ffdeck.error
     async def cooldown_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.channel.send(embed=discord.Embed(

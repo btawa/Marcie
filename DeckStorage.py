@@ -8,6 +8,8 @@ import datetime
 from DeckListBuilder import DeckListBuilder
 import logging
 import time
+from Constants import EMBEDCOLOR
+
 
 class DeckStorage(commands.Cog):
     def __init__(self, bot: commands.Bot, mongoaddress):
@@ -16,8 +18,9 @@ class DeckStorage(commands.Cog):
         self.db = self.mongoclient['MarcieProd']
         self.decks = self.db['decks']
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
-    async def save(self, ctx, url):
+    async def save(self, ctx, url: str):
 
         """This function saves a ffdecks link to the database to share with others
 
@@ -46,6 +49,7 @@ class DeckStorage(commands.Cog):
         else:
             await ctx.channel.send(f"```This doesn't look like an ffdecks deck link.```")
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def mydecks(self, ctx):
 
@@ -72,9 +76,9 @@ class DeckStorage(commands.Cog):
 
             await ctx.channel.send(embed=embed)
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
-    async def lookup(self, ctx, user):
-
+    async def lookup(self, ctx, *, user: str):
         """ This function allows users to look up other peoples saved decks.
 
         It takes input user which is the first part of the persons discord account name.
@@ -89,7 +93,7 @@ class DeckStorage(commands.Cog):
         doc_count = self.decks.count_documents(query)
 
         if doc_count == 0:
-            await ctx.channel.send("```Can't find this users data```")
+            await ctx.channel.send(f"```Found no decks for user: {user}```")
         else:
             output = ""
             for deck in cursor:
@@ -101,6 +105,7 @@ class DeckStorage(commands.Cog):
 
             await ctx.channel.send(embed=embed)
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def flushdecks(self, ctx):
 
@@ -133,6 +138,7 @@ class DeckStorage(commands.Cog):
             await question.edit(content=f"```Cancelled flushing {ctx.message.author.name}'s decks from db.```")
             return
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def delete(self, ctx, deck_name):
 
@@ -157,8 +163,14 @@ class DeckStorage(commands.Cog):
 
         await ctx.channel.send(body)
 
+    @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def decklist(self, ctx, url):
+
+        """This command takes in a ffdecks url and prints out a image of the decklist laid out.
+
+            Example: ?decklist https://ffdecks.com/deck/<deck id>
+        """
         parser = DeckParser(url)
         try:
             if parser.deck:
@@ -167,3 +179,15 @@ class DeckStorage(commands.Cog):
                 await ctx.channel.send(file=discord.File(fp=deck_list_image.bytes_image, filename=f'{filename}.jpg'))
         except Exception as e:
             logging.info(e)
+
+    @decklist.error
+    @delete.error
+    @flushdecks.error
+    @lookup.error
+    @mydecks.error
+    @save.error
+    async def cooldown_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            await ctx.channel.send(embed=discord.Embed(
+                description='Command is on cooldown for ' + ctx.author.display_name,
+                color=EMBEDCOLOR))
