@@ -140,7 +140,7 @@ class DeckStorage(commands.Cog):
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
-    async def delete(self, ctx, deck_name):
+    async def delete(self, ctx, *, deck_name: str):
 
         """This function deletes a users single deck from the database
 
