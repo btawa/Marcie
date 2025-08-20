@@ -1,54 +1,56 @@
+"""Discord embed utilities for the Marcie bot."""
+
+from typing import List, Dict, Any
 import discord
 import datetime
-from constants import EMBEDCOLOR
-from fftcg_parser import *
+from constants import EMBEDCOLOR, DISCORD_CACHE_BYPASS
+from fftcg_parser import prettyCard, prettyCode
 
 
 class MarcieEmbed:
-
-    DISCORD_CACHE_BYPASS = "?1"
+    """Utility class for creating Discord embeds for FFTCG cards."""
 
     @staticmethod
-    def NOMATCH():
+    def NOMATCH() -> discord.Embed:
         embed = discord.Embed(title='No Match',
                               color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
-    def TOOMANYCARDS():
+    def TOOMANYCARDS() -> discord.Embed:
         embed = discord.Embed(title='Too many cards please be more specific',
                               color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
-    def TOOMANYCHAR():
+    def TOOMANYCHAR() -> discord.Embed:
         embed = discord.Embed(title='Too many characters please be more specific',
                               color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
-    def COMMANDTIMEOUT():
+    def COMMANDTIMEOUT() -> discord.Embed:
         embed = discord.Embed(title='Command timed out',
                               color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
-    def PARSERERROR():
+    def PARSERERROR() -> discord.Embed:
         embed = discord.Embed(title='Unable to parse inputs.  Please check inputs and try again',
                               color=EMBEDCOLOR,
                               timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
-    def toEmbed(title, text):
+    def toEmbed(title: str, text: str) -> discord.Embed:
         return discord.Embed(title=title, description=text, color=EMBEDCOLOR, timestamp=datetime.datetime.utcnow())
 
     @staticmethod
-    def cardlistToEmbed(cards, uuid):
+    def cardlistToEmbed(cards: List[Dict[str, Any]], uuid: str) -> discord.Embed:
         output = str()
 
         for card in cards:
@@ -66,7 +68,7 @@ class MarcieEmbed:
         return embed
 
     @staticmethod
-    def cardToNameEmbed(card, uuid, lang):
+    def cardToNameEmbed(card: Dict[str, Any], uuid: str, lang: str) -> discord.Embed:
         mycard = prettyCard(card)
 
         embed = discord.Embed(title=mycard.split('\n', 1)[0],
@@ -76,11 +78,11 @@ class MarcieEmbed:
         embed.set_footer(text='ID: ' + uuid)
 
         if lang == 'en':
-            embed.set_thumbnail(url=card['image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+            embed.set_thumbnail(url=card['image_url'] + DISCORD_CACHE_BYPASS)
         elif lang == 'jp':
             try:
-                embed.set_thumbnail(url=card['image_url_jp'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
-            except:
+                embed.set_thumbnail(url=card['image_url_jp'] + DISCORD_CACHE_BYPASS)
+            except KeyError:
                 pass
         else:
             pass
@@ -88,15 +90,15 @@ class MarcieEmbed:
         return embed
 
     @staticmethod
-    def cardToImageEmbed(card, uuid, lang):
+    def cardToImageEmbed(card: Dict[str, Any], uuid: str, lang: str) -> discord.Embed:
         embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
 
         if lang == 'en':
-            embed.set_image(url=card[u'image_url'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
+            embed.set_image(url=card['image_url'] + DISCORD_CACHE_BYPASS)
         elif lang == 'jp':
             try:
-                embed.set_image(url=card[u'image_url_jp'] + MarcieEmbed.DISCORD_CACHE_BYPASS)
-            except:
+                embed.set_image(url=card['image_url_jp'] + DISCORD_CACHE_BYPASS)
+            except KeyError:
                 pass
         else:
             pass
