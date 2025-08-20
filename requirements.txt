@@ -1,0 +1,4 @@
+discord.py>=2.4.0
+roman>=4.0.0
+requests>=2.31.0
+DiscordUtils>=1.3.4

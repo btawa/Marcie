@@ -1,19 +1,16 @@
 from discord.ext import commands
 import time
 import datetime
-import pymongo
 import discord
 import logging
 from constants import EMBEDCOLOR
 
 
 class Management(commands.Cog):
-    def __init__(self, bot, mongoaddress):
+    def __init__(self, bot, database_path):
         self.bot = bot
         self.appstart = time.time()
-        self.mongoclient = pymongo.MongoClient(mongoaddress)
-        self.db = self.mongoclient['MarcieProd']
-        self.settings = self.db['settings']
+        # SQLite database path is stored but not used directly (using db_manager instead)
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
@@ -52,7 +49,8 @@ class Management(commands.Cog):
         if ctx.message.author.id == ctx.guild.owner_id or ctx.message.author.guild_permissions.administrator is True:
             logging.info(ctx.guild.name + ' (' + str(ctx.guild.id) + ') ' + 'changed prefix to ' + prefix)
 
-            self.settings.find_one_and_update({'guildid': ctx.guild.id}, {'$set': {'prefix': prefix}})
+            from database import db_manager
+            db_manager.update_setting_prefix(ctx.guild.id, prefix)
 
             embed = discord.Embed(title='Switched prefix to ' + str(prefix), color=EMBEDCOLOR,
                                   timestamp=datetime.datetime.utcnow())
