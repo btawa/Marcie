@@ -260,6 +260,48 @@ class FFTCG(commands.Cog):
             logging.info(f"https://www.strawpoll.me/{mypoll['id']}")
         await ctx.channel.send(output)
 
+    async def _handle_card_query(self, ctx, name: str, query_type: str) -> None:
+        """Shared logic for name and image card queries."""
+        my_uuid = uuid.uuid1().hex[:10]
+        logging.info(f"{ctx.message.content} - ID: {my_uuid}")
+
+        if re.match(self.codevalidator, name):
+            mycard = grab_card(name.upper(), self.cards)
+            if not mycard:
+                logging.info('No Match')
+                embed = MarcieEmbed.NOMATCH()
+                embed.set_footer(text='ID: ' + my_uuid)
+                await ctx.channel.send(embed=embed)
+            else:
+                logging.info('\n' + prettyCard(mycard))
+                if query_type == 'name':
+                    embed = MarcieEmbed.cardToNameEmbed(mycard, my_uuid, 'en')
+                else:
+                    embed = MarcieEmbed.cardToImageEmbed(mycard, my_uuid, 'en')
+                await ctx.channel.send(embed=embed)
+        else:
+            mycard = grab_cards(name.lower(), self.cards, "Name")
+            if not mycard:
+                logging.info('No Match')
+                embed = MarcieEmbed.NOMATCH()
+                embed.set_footer(text='ID: ' + my_uuid)
+                await ctx.channel.send(embed=embed)
+            else:
+                if len(mycard) >= MAX_QUERY:
+                    embed = MarcieEmbed.TOOMANYCARDS()
+                    embed.set_footer(text='ID: ' + my_uuid)
+                    await ctx.channel.send(embed=embed)
+                elif len(mycard) == 1:
+                    logging.info('\n' + prettyCard(mycard[0]))
+                    if query_type == 'name':
+                        embed = MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, 'en')
+                    else:
+                        embed = MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, 'en')
+                    await ctx.channel.send(embed=embed)
+                else:
+                    select_type = f"{query_type}query"
+                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, select_type, 'en')
+
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def name(self, ctx, *, name: str):
@@ -284,57 +326,7 @@ class FFTCG(commands.Cog):
             ?name 1-001H
             ?name 1-001
         """
-
-        # This UUID is used to track requests in logs for recreation of potential issues
-        my_uuid = uuid.uuid1().hex[:10]
-        logging.info(f"{ctx.message.content} - ID: {my_uuid}")
-
-        if re.match(self.codevalidator, name):  # Checking to see if we match a code with regex
-
-            mycard = grab_card(name.upper(), self.cards)  # Trying to grab that card
-
-            # When we don't match return no match as embed
-            if not mycard:
-                logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH()
-                embed.set_footer(text='ID: ' + my_uuid)
-                await ctx.channel.send(embed=embed)
-            # Print the card information as an embed
-            else:
-                logging.info('\n' + prettyCard(mycard))
-                embed = MarcieEmbed.cardToNameEmbed(mycard, my_uuid, 'en')
-                await ctx.channel.send(embed=embed)
-
-        # If we don't match a code, the we assume we are searching by name
-        else:
-
-            mycard = grab_cards(name.lower(), self.cards, "Name")  # Grabbing our cards to parse
-
-            # When we don't match return no match as embed
-            if not mycard:
-                logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH()
-                embed.set_footer(text='ID: ' + my_uuid)
-                await ctx.channel.send(embed=embed)
-
-            # When we do match
-            else:
-
-                # If there are more than MAX_QUERY cards in the list return too many cards as an embed
-                if len(mycard) >= MAX_QUERY:
-                    embed = MarcieEmbed.TOOMANYCARDS()
-                    embed.set_footer(text='ID: ' + my_uuid)
-                    await ctx.channel.send(embed=embed)
-
-                # If there is only one match, return that card as an embed
-                elif len(mycard) == 1:
-                    logging.info('\n' + prettyCard(mycard[0]))
-                    embed = MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, 'en')
-                    await ctx.channel.send(embed=embed)
-
-                # Else we have to parse through the cards and ask for user input
-                else:
-                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery", 'en')
+        await self._handle_card_query(ctx, name, 'name')
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
@@ -360,57 +352,7 @@ class FFTCG(commands.Cog):
             ?image 1-001H
             ?image 1-001
         """
-
-        # This UUID is used to track requests in logs for recreation of potential issues
-        my_uuid = uuid.uuid1().hex[:10]
-        logging.info(f"{ctx.message.content} - ID: {my_uuid}")
-
-        if re.match(self.codevalidator, name):  # Checking to see if we match a code with regex
-
-            mycard = grab_card(name.upper(), self.cards)  # Trying to grab that card
-
-            # When we don't match return no match as embed
-            if not mycard:
-                logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH()
-                embed.set_footer(text='ID: ' + my_uuid)
-                await ctx.channel.send(embed=embed)
-            # Print the card information as an embed
-            else:
-                logging.info('\n' + prettyCard(mycard))
-                embed = MarcieEmbed.cardToImageEmbed(mycard, my_uuid, 'en')
-                await ctx.channel.send(embed=embed)
-
-        # If we don't match a code, the we assume we are searching by name
-        else:
-
-            mycard = grab_cards(name.lower(), self.cards, "Name")  # Grabbing our cards to parse
-
-            # When we don't match return no match as embed
-            if not mycard:
-                logging.info('No Match')
-                embed = MarcieEmbed.NOMATCH()
-                embed.set_footer(text='ID: ' + my_uuid)
-                await ctx.channel.send(embed=embed)
-
-            # When we do match
-            else:
-
-                # If there are more than MAX_QUERY cards in the list return too many cards as an embed
-                if len(mycard) >= MAX_QUERY:
-                    embed = MarcieEmbed.TOOMANYCARDS()
-                    embed.set_footer(text='ID: ' + my_uuid)
-                    await ctx.channel.send(embed=embed)
-
-                # If there is only one match, return that card as an embed
-                elif len(mycard) == 1:
-                    logging.info('\n' + prettyCard(mycard[0]))
-                    embed = MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, 'en')
-                    await ctx.channel.send(embed=embed)
-
-                # Else we have to parse through the cards and ask for user input
-                else:
-                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery", 'en')
+        await self._handle_card_query(ctx, name, 'image')
 
     @commands.command()
     async def paginate(self, ctx, *, name: str):
