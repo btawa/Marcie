@@ -26,12 +26,22 @@ class FFTCG(commands.Cog):
 
     @staticmethod
     async def selectLogic(ctx, bot, cards, uuid, querytype, lang):
-        embed = MarcieEmbed.cardlistToEmbed(cards, uuid)
+        # Sort cards by set number (extract number from code like "12-014R" -> 12)
+        def get_set_number(card):
+            try:
+                # Extract the first number from the code (before the dash)
+                return int(card['Code'].split('-')[0])
+            except (ValueError, IndexError, KeyError):
+                # If extraction fails, put at end with high number
+                return 999
+        
+        sorted_cards = sorted(cards, key=get_set_number)
+        embed = MarcieEmbed.cardlistToEmbed(sorted_cards, uuid)
         mymessage = await ctx.channel.send(embed=embed)
 
         def check(msg):
             if re.match(r'^\d+$', str(msg.content)) and msg.channel == ctx.channel and ctx.author == msg.author:
-                if len(cards) >= int(msg.content) >= 1:
+                if len(sorted_cards) >= int(msg.content) >= 1:
                     logging.info(f"Choice: {msg.content}")
                     return True
             else:
@@ -50,10 +60,10 @@ class FFTCG(commands.Cog):
             await mymessage.edit(embed=embed)
             return
 
-        logging.info('\n' + prettyCard(cards[int(message.content) - 1]))
+        logging.info('\n' + prettyCard(sorted_cards[int(message.content) - 1]))
 
         try:
-            mycard = cards[int(message.content) - 1]
+            mycard = sorted_cards[int(message.content) - 1]
 
             try:
                 await message.delete()
@@ -96,15 +106,24 @@ class FFTCG(commands.Cog):
 
         mycard = grab_cards(name.lower(), self.cards, "Name")
 
+        # Sort cards by set number
+        def get_set_number(card):
+            try:
+                return int(card['Code'].split('-')[0])
+            except (ValueError, IndexError, KeyError):
+                return 999
+        
+        sorted_cards = sorted(mycard, key=get_set_number)
+
         output = ''
 
-        if not mycard:
+        if not sorted_cards:
             output = '```No Match```'
         else:
-            if len(mycard) >= MAX_QUERY:
+            if len(sorted_cards) >= MAX_QUERY:
                 output = 'Too many cards please be more specific'
             else:
-                for x in mycard:
+                for x in sorted_cards:
                     output = output + prettyCode(x) + "\n"
 
             if len(output) >= 2000:
@@ -173,45 +192,54 @@ class FFTCG(commands.Cog):
 
         mycard = grab_cards_beta(self.cards, vars(args))
 
+        # Sort cards by set number
+        def get_set_number(card):
+            try:
+                return int(card['Code'].split('-')[0])
+            except (ValueError, IndexError, KeyError):
+                return 999
+        
+        sorted_cards = sorted(mycard, key=get_set_number)
+
         # Checks for tiny flag to modify output.
         # If no --tiny then we do our normal selection logic
         if args.tiny is False:
             if args.image is True:
-                if len(mycard) == 0:
+                if len(sorted_cards) == 0:
                     await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
-                elif len(mycard) == 1:
-                    await ctx.channel.send(embed=MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, args.lang.lower()))
-                elif len(mycard) >= MAX_QUERY:
+                elif len(sorted_cards) == 1:
+                    await ctx.channel.send(embed=MarcieEmbed.cardToImageEmbed(sorted_cards[0], my_uuid, args.lang.lower()))
+                elif len(sorted_cards) >= MAX_QUERY:
                     await ctx.channel.send(embed=MarcieEmbed.TOOMANYCARDS())
                 else:
-                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "imagequery", args.lang.lower())
+                    await self.selectLogic(ctx, self.bot, sorted_cards, my_uuid, "imagequery", args.lang.lower())
 
             elif args.paginate is True:
-                embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid, 'en') for card in mycard]
+                embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid, 'en') for card in sorted_cards]
                 paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx, remove_reactions=True)
                 await paginator.run(embed_list)
 
             else:
-                if len(mycard) == 0:
+                if len(sorted_cards) == 0:
                     await ctx.channel.send(embed=MarcieEmbed.NOMATCH)
-                elif len(mycard) == 1:
-                    await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, args.lang.lower()))
-                elif len(mycard) >= MAX_QUERY:
+                elif len(sorted_cards) == 1:
+                    await ctx.channel.send(embed=MarcieEmbed.cardToNameEmbed(sorted_cards[0], my_uuid, args.lang.lower()))
+                elif len(sorted_cards) >= MAX_QUERY:
                     await ctx.channel.send(embed=MarcieEmbed.TOOMANYCARDS())
                 else:
-                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, "namequery", args.lang.lower())
+                    await self.selectLogic(ctx, self.bot, sorted_cards, my_uuid, "namequery", args.lang.lower())
 
         # If we do have --tiny flag then we print our cards in tiny
         else:
             output = ''
 
-            if not mycard:
+            if not sorted_cards:
                 output = '```No Match```'
             else:
-                if len(mycard) >= MAX_QUERY:
+                if len(sorted_cards) >= MAX_QUERY:
                     output = 'Too many cards please be more specific'
                 else:
-                    for x in mycard:
+                    for x in sorted_cards:
                         output = output + prettyCode(x) + "\n"
 
                 if len(output) >= 2000:
@@ -281,26 +309,36 @@ class FFTCG(commands.Cog):
                 await ctx.channel.send(embed=embed)
         else:
             mycard = grab_cards(name.lower(), self.cards, "Name")
-            if not mycard:
+            
+            # Sort cards by set number
+            def get_set_number(card):
+                try:
+                    return int(card['Code'].split('-')[0])
+                except (ValueError, IndexError, KeyError):
+                    return 999
+            
+            sorted_cards = sorted(mycard, key=get_set_number)
+            
+            if not sorted_cards:
                 logging.info('No Match')
                 embed = MarcieEmbed.NOMATCH()
                 embed.set_footer(text='ID: ' + my_uuid)
                 await ctx.channel.send(embed=embed)
             else:
-                if len(mycard) >= MAX_QUERY:
+                if len(sorted_cards) >= MAX_QUERY:
                     embed = MarcieEmbed.TOOMANYCARDS()
                     embed.set_footer(text='ID: ' + my_uuid)
                     await ctx.channel.send(embed=embed)
-                elif len(mycard) == 1:
-                    logging.info('\n' + prettyCard(mycard[0]))
+                elif len(sorted_cards) == 1:
+                    logging.info('\n' + prettyCard(sorted_cards[0]))
                     if query_type == 'name':
-                        embed = MarcieEmbed.cardToNameEmbed(mycard[0], my_uuid, 'en')
+                        embed = MarcieEmbed.cardToNameEmbed(sorted_cards[0], my_uuid, 'en')
                     else:
-                        embed = MarcieEmbed.cardToImageEmbed(mycard[0], my_uuid, 'en')
+                        embed = MarcieEmbed.cardToImageEmbed(sorted_cards[0], my_uuid, 'en')
                     await ctx.channel.send(embed=embed)
                 else:
                     select_type = f"{query_type}query"
-                    await self.selectLogic(ctx, self.bot, mycard, my_uuid, select_type, 'en')
+                    await self.selectLogic(ctx, self.bot, sorted_cards, my_uuid, select_type, 'en')
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
@@ -382,7 +420,16 @@ class FFTCG(commands.Cog):
         my_uuid = uuid.uuid1().hex[:10]
         mycards = grab_cards(name.lower(), self.cards, "Name")
 
-        embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid, 'en') for card in mycards]
+        # Sort cards by set number
+        def get_set_number(card):
+            try:
+                return int(card['Code'].split('-')[0])
+            except (ValueError, IndexError, KeyError):
+                return 999
+        
+        sorted_cards = sorted(mycards, key=get_set_number)
+
+        embed_list = [MarcieEmbed.cardToImageEmbed(card, my_uuid, 'en') for card in sorted_cards]
 
         paginator = DiscordUtils.Pagination.AutoEmbedPaginator(ctx, remove_reactions=True)
 

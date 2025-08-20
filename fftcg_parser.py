@@ -150,7 +150,11 @@ def prettyCode(card):
     elif re.search(r'\/', card['Code']):
         line1 = f"{card['Code']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
     else:
-        line1 = f"{card['Code']}{card['Rarity']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
+        # Check if rarity is already included in the code
+        if card['Code'].endswith(card['Rarity']):
+            line1 = f"{card['Code']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
+        else:
+            line1 = f"{card['Code']}{card['Rarity']} \u00B7 {card['Name_EN']} \u00B7 {card['Element']} {card['Cost']} \u00B7 {card['Type_EN']} {multicard}"
     return line1
 
 
@@ -171,7 +175,11 @@ def prettyCard(card):
     elif re.search(r'\/', card['Code']):
         line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
     else:
-        line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}{card[u'Rarity']}) {multicard}"
+        # Check if rarity is already included in the code
+        if card['Code'].endswith(card['Rarity']):
+            line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}) {multicard}"
+        else:
+            line1 = f"{card[u'Name_EN']} \u00B7 {card[u'Element']} {card[u'Cost']} \u00B7 ({card[u'Code']}{card[u'Rarity']}) {multicard}"
 
     if card[u'Type_EN'] == "Summon":
         line2 = f"{card[u'Type_EN']} \u00B7 {card[u'Category_1']}"
