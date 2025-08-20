@@ -50,6 +50,8 @@ class BotConfig:
         parser = argparse.ArgumentParser(description='Run Marcie Discord bot')
         parser.add_argument('-d', '--db', type=str, help='SQLite database file path', 
                           default=os.getenv('MARCIE_DB_PATH', 'marcie.db'))
+        parser.add_argument('--db-path', type=str, help='Directory path for database file',
+                          default=os.getenv('MARCIE_DB_DIR', '.'))
         parser.add_argument('-a', '--api', type=str, help='Card API address Ex: http://dev.tawa.wtf:8000',
                           default=os.getenv('MARCIE_API_URL'))
         parser.add_argument('-t', '--token', type=str, help='Discord bot token',
@@ -67,12 +69,20 @@ class BotConfig:
         if not args.key:
             raise ValueError("API key is required. Provide via --key or MARCIE_API_KEY environment variable.")
         
+        # Handle database path - combine directory and filename
+        db_filename = os.path.basename(args.db) if args.db != 'marcie.db' else 'marcie.db'
+        
+        # Ensure the database directory exists
+        os.makedirs(args.db_path, exist_ok=True)
+        
+        full_db_path = os.path.join(args.db_path, db_filename)
+        
         # Create config instance
         config = cls(
             api_base_url=args.api,
             api_key=args.key,
             discord_token=args.token,
-            database_path=args.db
+            database_path=full_db_path
         )
         
         # Initialize database
