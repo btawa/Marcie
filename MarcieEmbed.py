@@ -77,11 +77,12 @@ class MarcieEmbed:
                               color=EMBEDCOLOR)
         embed.set_footer(text='ID: ' + uuid)
 
-        if lang == 'en':
+        if lang == 'en' and card['image_url']:
             embed.set_thumbnail(url=card['image_url'] + DISCORD_CACHE_BYPASS)
         elif lang == 'jp':
             try:
-                embed.set_thumbnail(url=card['image_url_jp'] + DISCORD_CACHE_BYPASS)
+                if card['image_url_jp']:
+                    embed.set_thumbnail(url=card['image_url_jp'] + DISCORD_CACHE_BYPASS)
             except KeyError:
                 pass
         else:
@@ -93,11 +94,12 @@ class MarcieEmbed:
     def cardToImageEmbed(card: Dict[str, Any], uuid: str, lang: str) -> discord.Embed:
         embed = discord.Embed(timestamp=datetime.datetime.utcnow(), color=EMBEDCOLOR)
 
-        if lang == 'en':
+        if lang == 'en' and card['image_url']:
             embed.set_image(url=card['image_url'] + DISCORD_CACHE_BYPASS)
         elif lang == 'jp':
             try:
-                embed.set_image(url=card['image_url_jp'] + DISCORD_CACHE_BYPASS)
+                if card['image_url_jp']:
+                    embed.set_image(url=card['image_url_jp'] + DISCORD_CACHE_BYPASS)
             except KeyError:
                 pass
         else:
