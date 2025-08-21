@@ -17,8 +17,13 @@ class Management(commands.Cog):
     async def uptime(self, ctx):
         """Returns how long marcie has been running.
         """
-        uptime = f"```{datetime.timedelta(seconds=time.time() - self.appstart)}```"
-
+        s = int(time.time() - self.appstart)
+        parts = []
+        if s >= 86400: parts.append(f"{s//86400} day{'s' if s//86400 != 1 else ''}")
+        if s >= 3600: parts.append(f"{(s%86400)//3600} hour{'s' if (s%86400)//3600 != 1 else ''}")
+        if s >= 60: parts.append(f"{(s%3600)//60} minute{'s' if (s%3600)//60 != 1 else ''}")
+        
+        uptime = f"```up {', '.join(parts) if parts else 'less than a minute'}```"
         await ctx.channel.send(uptime)
 
     @commands.cooldown(2, 10, type=commands.BucketType.user)
