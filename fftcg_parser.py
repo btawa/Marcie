@@ -1,11 +1,9 @@
 import json
 import re
 import urllib.request
-import io
 import roman
 import random
 import requests
-import time
 import logging
 
 # Helpful jq
@@ -201,59 +199,10 @@ def prettyCard(card):
 
     # Fixes #16, this is needed because markup converts []() to links
     # This causes issue with outputting to discord via embed
-    finished_string = finished_string.replace('[', '\[')
-    finished_string = finished_string.replace(']', '\]')
+    finished_string = finished_string.replace('[', r'\[')
+    finished_string = finished_string.replace(']', r'\]')
 
     return finished_string
-
-
-def getImage(code):
-    """This function takes in a code as a string and returns and image that can be sent to a discord channel"""
-
-    if re.search(r'[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
-        URL = 'https://fftcg.cdn.sewest.net/images/cards/full/' + code[-6:] + '_eg.jpg'
-    else:
-        URL = 'https://fftcg.cdn.sewest.net/images/cards/full/' + code + '_eg.jpg'
-
-    try:
-        card_img = urllib.request.urlopen(URL)
-    except:
-        return
-    else:
-        data = io.BytesIO(card_img.read())
-        return data
-    finally:
-        urllib.request.urlcleanup()
-
-
-def getimageURL(code):
-    """This function takes in a code as a string and returns an image link which points to square"""
-
-    if re.search(r'[0-9]+\-[0-9]{3}[a-zA-Z]/[0-9]+\-[0-9]{3}[a-zA-Z]', code):
-        URL = 'https://fftcg.cdn.sewest.net/images/cards/full/' + code[-6:] + '_eg.jpg'
-    else:
-        URL = 'https://fftcg.cdn.sewest.net/images/cards/full/' + code + '_eg.jpg'
-
-    return URL
-
-
-def urlset(cards_list):
-    """This function takes in list of cards and creates a list of URL's and returns it as a list"""
-
-    url_list = []
-    for card in cards_list:
-        if re.search(r'\/', card['Code']):
-            for x in card['Code'].split('/'):
-                if re.search(r'H|R|P|C|L', x):
-                    url_list.append('https://storage.googleapis.com/marcieapi-images/' + x + '_eg.jpg?' + str(int(time.time())))
-                else:
-                    url_list.append('https://storage.googleapis.com/marcieapi-images/' + x + card['Rarity'] + '_eg.jpg?' + str(int(time.time())))
-        elif card['Rarity'] == "P":
-            url_list.append('https://storage.googleapis.com/marcieapi-images/' + card['Code'] + '_eg.jpg?' + str(int(time.time())))
-        else:
-            url_list.append('https://storage.googleapis.com/marcieapi-images/' + card['Code'] + card['Rarity'] + '_eg.jpg?' + str(int(time.time())))
-
-    return list(dict.fromkeys(url_list))
 
 
 # Loading JSON from file and load it into a variable
