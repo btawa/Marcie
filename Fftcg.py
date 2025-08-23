@@ -83,7 +83,7 @@ class FFTCG(commands.Cog):
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def tiny(self, ctx, *, name: str):
-        """Returns a compacted list of cards. Takes a name.  Accepts regex.
+        r"""Returns a compacted list of cards. Takes a name.  Accepts regex.
 
         This command was initially created when name and image were less developed.  It takes in a card name and returns
          a compacted list of cards.  It is mostly used as a debug tool now.
@@ -136,7 +136,7 @@ class FFTCG(commands.Cog):
     @commands.command()
     async def adv(self, ctx, *, arg):
 
-        """This command allows card querying by providing arguments to filter off of.
+        r"""This command allows card querying by providing arguments to filter off of.
             -n, --name - Card Name (Yuna, Vaelfor, etc. (takes regex))
             -j, --job - Card Job (Summoner, Samurai, etc. (takes regex))
             -e, --element - Card Element (Fire, Ice, Light, etc.)
@@ -343,7 +343,7 @@ class FFTCG(commands.Cog):
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def name(self, ctx, *, name: str):
-        """Returns text of card. Takes code or name.  Accepts regex.
+        r"""Returns text of card. Takes code or name.  Accepts regex.
 
         This function only takes one argument, either a name or card code. It will return the text and thumbnail of the
         card as an embed. If there are multiple matches on your query, the bot will provide you with a list of cards
@@ -369,7 +369,7 @@ class FFTCG(commands.Cog):
     @commands.cooldown(2, 10, type=commands.BucketType.user)
     @commands.command()
     async def image(self, ctx, *, name: str):
-        """Returns image of card. Takes code or name.  Accepts regex.
+        r"""Returns image of card. Takes code or name.  Accepts regex.
 
         This function only takes one argument, either a name or card code. It will return the image of the card as an
         embed. If there are multiple matches on your query, the bot will provide you with a list of cards that you can
@@ -394,7 +394,7 @@ class FFTCG(commands.Cog):
 
     @commands.command()
     async def paginate(self, ctx, *, name: str):
-        """Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
+        r"""Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
 
         This function only takes one argument, a name. It will return the image of the card as an embed.
         If there are multiple matches on your query, the bot will provide react emojis that can be used to page through
