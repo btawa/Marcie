@@ -14,6 +14,8 @@ For each Discord server Marcie is added to, we store:
 
 This is used only to know which prefix to respond to in each server. It is kept for as long as Marcie is in the server and deleted when Marcie is removed.
 
+We also count how many commands each server uses per day, to see which servers are still using Marcie. These counts contain only the server ID, the date, and a number. They say nothing about who ran the commands or what was searched. Daily counts are kept for 90 days and then combined into monthly totals, which are kept for 2 years. All counts for a server are deleted when Marcie is removed from it.
+
 We do not store any information about individual users.
 
 ## What Marcie logs

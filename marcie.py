@@ -1,16 +1,19 @@
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
 import discord
 import hashlib
 import json
 import logging
 import argparse
+import asyncio
 import os
+import signal
 from Fftcg import FFTCG
 from Management import Management
 from MarcieEmbed import MarcieEmbed
 from prefix_store import PrefixStore
-from constants import DEFAULT_PREFIX, EMBEDCOLOR
+from activity_store import ActivityStore
+from constants import DEFAULT_PREFIX, EMBEDCOLOR, ACTIVITY_FLUSH_SECONDS, SECONDS_PER_DAY
 
 __author__ = "btawa"
 
@@ -38,13 +41,14 @@ async def get_pre(bot, message):
 
 
 class Marcie(commands.Bot):
-    def __init__(self, prefixes, api):
+    def __init__(self, prefixes, activity, api):
         intents = discord.Intents.default()
         intents.message_content = True
 
         super().__init__(command_prefix=get_pre, description='Marcie FFTCG Bot', intents=intents)
 
         self.prefixes = prefixes
+        self.guildActivity = activity
         self.api = api
         self.firstrun = True
 
@@ -54,6 +58,47 @@ class Marcie(commands.Bot):
 
         self.tree.on_error = self.on_app_command_error
         await self.syncCommands()
+
+        self.saveActivity.start()
+        self.cleanupActivity.start()
+
+        # docker stop sends SIGTERM, which would otherwise exit without saving activity counts.  Windows has no
+        # SIGTERM handler support, there counts are saved every ACTIVITY_FLUSH_SECONDS and on Ctrl+C.
+        try:
+            asyncio.get_running_loop().add_signal_handler(signal.SIGTERM, lambda: asyncio.create_task(self.close()))
+        except NotImplementedError:
+            pass
+
+    async def close(self):
+        log.info('Shutting down, saving activity counts')
+        self.saveActivity.cancel()
+        self.cleanupActivity.cancel()
+        self.guildActivity.flush()
+        await super().close()
+
+    @tasks.loop(seconds=ACTIVITY_FLUSH_SECONDS)
+    async def saveActivity(self):
+        try:
+            self.guildActivity.flush()
+        except Exception:
+            log.exception('Unable to save activity counts, will retry')
+
+    @tasks.loop(seconds=SECONDS_PER_DAY)
+    async def cleanupActivity(self):
+        try:
+            self.guildActivity.cleanup()
+        except Exception:
+            log.exception('Unable to clean up activity counts, will retry')
+
+    # Activity counts: one per command per server, with nothing about who ran it.  Slash commands are counted when
+    # the interaction arrives (this includes slash versions of ? commands), ? commands when they are invoked.
+    async def on_command(self, ctx):
+        if ctx.guild and not ctx.interaction:
+            self.guildActivity.record(ctx.guild.id)
+
+    async def on_interaction(self, interaction):
+        if interaction.guild_id and interaction.type == discord.InteractionType.application_command:
+            self.guildActivity.record(interaction.guild_id)
 
     # Slash commands only need registering with Discord when they change, so a hash of the last synced
     # commands is kept next to marcie.db.  Delete commands.sha256 to force a sync.
@@ -83,6 +128,7 @@ class Marcie(commands.Bot):
     # This function handles when the bot is removed from a guild under normal operation
     async def on_guild_remove(self, guild):
         self.prefixes.remove(guild.id)
+        self.guildActivity.remove(guild.id)
         log.info(f"Guild: {guild.name} has removed Marcie")
 
     # This function handles when the bot is added to a guild
@@ -150,6 +196,7 @@ class Marcie(commands.Bot):
         for guildid in set(self.prefixes.prefixes) - botguilds.keys():
             log.info(f"Guild {guildid} was removed while the bot was offline.  Removing from db.")
             self.prefixes.remove(guildid)
+            self.guildActivity.remove(guildid)
 
         # Guilds the bot is in that are missing from the db added Marcie while it was offline
         for guildid in botguilds.keys() - set(self.prefixes.prefixes):
@@ -160,8 +207,16 @@ class Marcie(commands.Bot):
         self.firstrun = False
 
 
+def dbPath(data_dir):
+    return os.path.join(data_dir, 'marcie.db')
+
+
 def load_prefixes(data_dir):
-    return PrefixStore(os.path.join(data_dir, 'marcie.db')).load()
+    return PrefixStore(dbPath(data_dir)).load()
+
+
+def load_activity(data_dir):
+    return ActivityStore(dbPath(data_dir)).load()
 
 
 def main():
@@ -180,7 +235,7 @@ def main():
     # Enable logging
     logging.basicConfig(level=args.log_level, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
-    bot = Marcie(load_prefixes(args.data_dir), f"{args.api}?api_key={args.key}")
+    bot = Marcie(load_prefixes(args.data_dir), load_activity(args.data_dir), f"{args.api}?api_key={args.key}")
     bot.run(args.token, log_handler=None)
 
 

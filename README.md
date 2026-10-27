@@ -33,7 +33,9 @@ Each setting can be passed as a command line flag or an environment variable. En
 | `--data-dir` (or `--db-path`) | `MARCIE_DATA_DIR` | Folder for `marcie.db`, defaults to the current directory |
 | `--log-level` | `MARCIE_LOG_LEVEL` | `DEBUG`, `INFO` (default), `WARNING` or `ERROR` |
 
-Marcie keeps each server's prefix in `marcie.db`, a SQLite file in the data folder that is created on first start. No database server is needed.
+Marcie keeps each server's prefix in `marcie.db`, a SQLite file in the data folder that is created on first start. No database server is needed. It also keeps a count of how many commands each server uses (no user information), as daily counts for 90 days and monthly totals for 2 years.
+
+To see which servers use Marcie, run `Marcie/scripts/list-guilds.sh` from the folder that contains `data/` (or pass the path to any `marcie.db`, such as a backup). It runs in a throwaway, read-only Docker container and lists each server's prefix, last active date, and command counts for the last 30 days and 12 months.
 
 ## Installation
 ### Normal
