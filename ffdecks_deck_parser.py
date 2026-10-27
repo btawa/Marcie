@@ -1,6 +1,6 @@
-import requests
-import json
 import re
+import logging
+import aiohttp
 
 
 class ffdecksParse:
@@ -16,19 +16,25 @@ class ffdecksParse:
         # utility
         self._root_url = 'https://ffdecks.com/api/deck?deck_id='
 
-        # creates and modifies outputs
         self.get_deck_id()
-        self.get_ffdeck_deck()
+
+    # Fetches the deck from ffdecks and builds the outputs.  Must be awaited before reading
+    # deck or ascii_decklist.
+    async def load(self, session):
+        await self.get_ffdeck_deck(session)
         if self.deck:
             self.gen_ascii_decklist()
 
+        return self
+
     def get_deck_id(self):
-        if re.search(r'ffdecks.com/deck/', self.url):
-            self.deck_id = re.search(r'(deck/)(\d+)', self.url).group(2)
+        match = re.search(r'ffdecks\.com/deck/(\d+)', self.url)
+        if match:
+            self.deck_id = match.group(1)
 
         return self
 
-    def get_ffdeck_deck(self):
+    async def get_ffdeck_deck(self, session):
         link = self._root_url + self.deck_id
 
         forwards = []
@@ -37,16 +43,14 @@ class ffdecksParse:
         monsters = []
 
         try:
-            req = requests.get(link)
-            ffdecks_dict = json.loads(req.text)
+            async with session.get(link) as req:
+                req.raise_for_status()
+                ffdecks_dict = await req.json(content_type=None)
+
             cards_dict = ffdecks_dict['cards']
 
             self.deck['deck_name'] = ffdecks_dict['name']
-
-            if ffdecks_dict['creator']:
-                self.deck['creator'] = ffdecks_dict['creator']
-            else:
-                self.deck['creator'] = None
+            self.deck['creator'] = ffdecks_dict.get('creator') or None
 
             for card in cards_dict:
                 cur_card = card['card']
@@ -57,11 +61,7 @@ class ffdecksParse:
                 serial = cur_card['serial_number']
                 quantity = card['quantity']
 
-                element = cur_card['elements']
-                if len(element) > 1:
-                    element = f"{element[0]}/{element[1]}"
-                else:
-                    element = element[0]
+                element = '/'.join(cur_card['elements'][:2])
 
                 card_dict = {'name': name,
                              'cost': cost,
@@ -86,7 +86,8 @@ class ffdecksParse:
 
             return self
 
-        except Exception as e:
+        except (aiohttp.ClientError, ValueError, KeyError, TypeError, IndexError) as e:
+            logging.info(f"ffdecks lookup failed for deck {self.deck_id}: {e!r}")
             self.deck = {}
             return self
 
@@ -99,33 +100,12 @@ class ffdecksParse:
         else:
             output += "\n"
 
-        if self.deck['forwards']:
-            output += "Forwards:\n"
-            for card in self.deck['forwards']:
-                line = f"{card['quantity']}x ({card['element']}) {card['cost']} {card['name']} ({card['serial']})\n"
-                output += line
-            output += '\n'
-
-        if self.deck['summons']:
-            output += "Summons:\n"
-            for card in self.deck['summons']:
-                line = f"{card['quantity']}x ({card['element']}) {card['cost']} {card['name']} ({card['serial']})\n"
-                output += line
-            output += '\n'
-
-        if self.deck['monsters']:
-            output += "Monsters:\n"
-            for card in self.deck['monsters']:
-                line = f"{card['quantity']}x ({card['element']}) {card['cost']} {card['name']} ({card['serial']})\n"
-                output += line
-            output += '\n'
-
-        if self.deck['backups']:
-            output += "Backups:\n"
-            for card in self.deck['backups']:
-                line = f"{card['quantity']}x ({card['element']}) {card['cost']} {card['name']} ({card['serial']})\n"
-                output += line
-            output += '\n'
+        for section in ['forwards', 'summons', 'monsters', 'backups']:
+            if self.deck[section]:
+                output += f"{section.capitalize()}:\n"
+                for card in self.deck[section]:
+                    output += f"{card['quantity']}x ({card['element']}) {card['cost']} {card['name']} ({card['serial']})\n"
+                output += '\n'
 
         self.ascii_decklist = output
         return self

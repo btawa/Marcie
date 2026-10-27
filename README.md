@@ -3,46 +3,59 @@ Marcie is a discord bot designed to provide discord users access to query for FF
   
 ## Community  
 ### Support Discord  
-- https://discordapp.com/invite/ZUZY7wb  
+- https://discord.gg/ZUZY7wb  
   
-### Discordbots.org Listing  
-- https://discordbots.org/bot/570428406957735946  
+### top.gg Listing  
+- https://top.gg/bot/570428406957735946  
   
 ## Dependencies  
-- Python 3.x
-- Configured application in discord developer portal  
+- Python 3.10+ (the Docker image uses 3.12)
+- Configured application in the [Discord developer portal](https://discord.com/developers/applications) with the **Message Content** privileged intent enabled  
 - MarcieAPI  
   + If you need access to this please reach out to Japnix in the support discord  
 - MongoDB  
 
 ### Python Libraries
-- discord.py
-- roman
-- requests
-- pymongo
-- DiscordUtils
-  
+See `requirements.txt`:
+- discord.py 2.x
+- pymongo 4.13+ (uses the native async client)
+
+## Configuration
+Each setting can be passed as a command line flag or an environment variable. Environment variables are preferred for the token and API key so they don't show up in process listings.
+
+| Flag | Environment variable | Description |
+|------|----------------------|-------------|
+| `--token` | `DISCORD_BOT_TOKEN` | Discord bot token |
+| `--key` | `MARCIE_API_KEY` | MarcieAPI key |
+| `--api` | `MARCIE_API` | MarcieAPI address, e.g. `http://dev.tawa.wtf:8000/api/` |
+| `--db` | `MARCIE_DB` | MongoDB url, e.g. `mongodb://db:27017` |
+
 ## Installation
 ### Normal
 
-    git clone  https://github.com/japnix/Marcie.git  
-    pip3 install discord.py roman requests pymongo DiscordUtils
-    python3 ./Marcie/marcie.py --token $DISCORD_BOT_TOKEN --key $API_KEY --api $API --db $DB
-    
-    Example:
-    python3 ./Marcie/marcie.py --token thisisnotarealtokenbutyouwouldgetthisfromyourdeveloperportal \
-    --key lolbbq \
-    --api http://dev.tawa.wtf:8000/api/ \
-    --db mongodb://db.:27017
-    
+    git clone https://github.com/japnix/Marcie.git
+    cd Marcie
+    python3 -m venv .venv
+    .venv/bin/pip install -r requirements.txt
+
+    export DISCORD_BOT_TOKEN=... MARCIE_API_KEY=... MARCIE_API=http://dev.tawa.wtf:8000/api/ MARCIE_DB=mongodb://db:27017
+    .venv/bin/python marcie.py
+
 ### Docker
-Marcie is also available as a docker container.  For more information please check its readme on dockerhub.
-- https://hub.docker.com/r/japnix/marcie
+
+    docker build -t marcie .
+    docker run -d --name marcie \
+        -e DISCORD_BOT_TOKEN -e MARCIE_API_KEY \
+        -e MARCIE_API=http://dev.tawa.wtf:8000/api/ \
+        -e MARCIE_DB=mongodb://db:27017 \
+        marcie
 
 ### Requirements  
 Ensure that your bot has the ability to `Read Text Channels & See Voice Channels` and `Send Messages` in the server you have joined it to.
 
-Marcie has some functionality which utilizes `Manage Messages` specifically paginate, which allows for using emoji reacts to page through card embeds.  Additionally, with selection logic Marcie will attempt to delete the response message which contains the selection.  
+`Manage Messages` is optional. With it, Marcie deletes the number you type when choosing a card from a selection list.  
+
+Commands can be triggered with the server's prefix or by mentioning Marcie, e.g. `@Marcie name auron`.
   
 ## Commands  
 
@@ -120,10 +133,11 @@ The default prefix is `?`
 
   
 ### ?pack
-This command returns a randomized pack of the requested FFTCG set.  
+This command returns a randomized pack of the requested FFTCG set. Named sets use their number, e.g. 15 is Crystal Dominion and 22 is Hidden Hope.
 
     Example:  
         ?pack 5
+        ?pack 22
 
 ### ?adv
 This command allows card querying by providing arguments to filter off of.
@@ -137,6 +151,12 @@ This command allows card querying by providing arguments to filter off of.
     -g, --category - Card Category (FFCC, X, etc.)
     -p, --power - Card Power (9000, 3000, etc.)
 
+    Output options:
+    -y, --tiny - Print cards in tiny output
+    -i, --image - Return card as image format
+    -l, --lang - Language of returned image/thumbnail (en, jp)
+    -a, --paginate - Returned cards will provide pagination buttons
+
     Example:
         ?adv --name yuna --type backup --cost 2
 #### Known Caveats
@@ -149,14 +169,12 @@ This command allows card querying by providing arguments to filter off of.
 ### ?paginate
 Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
 
-This function only takes one argument, a name. It will return the image of the card as an embed. If there are multiple matches on your query, the bot will provide react emojis that can be used to page througheach card. Only the users who create the query will be able to activate these react emojis.
+This function only takes one argument, a name. It will return the image of the card as an embed. If there are multiple matches on your query, the bot will provide buttons that can be used to page through each card. Only the user who created the query will be able to use these buttons.
 
     Example:
         ?paginate leviathan
 
 #### Known Caveats
-- This command requires the marcie to have `Manage Messages` permission.  Without this permission the react emojis will not operate as expected.  If you have any questions please reach out in the support discord.
-
 - This command is using regex for matching.  As a result special regex characters like '(' and ')' may not matches you may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of the overall card name.
 
         Example:

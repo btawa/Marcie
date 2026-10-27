@@ -1,0 +1,2 @@
+discord.py>=2.4,<3
+pymongo>=4.13,<5

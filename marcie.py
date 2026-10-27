@@ -1,124 +1,161 @@
 from discord.ext import commands
-import datetime
+from pymongo import AsyncMongoClient
+import discord
 import logging
-import pymongo
 import argparse
+import os
 from Fftcg import FFTCG
 from Management import Management
+from MarcieEmbed import MarcieEmbed
+from constants import DEFAULT_PREFIX, EMBEDCOLOR
 
 __author__ = "Japnix"
 
-# Create argparse parser
-parser = argparse.ArgumentParser(description='Run a Marcie bot"')
-parser.add_argument('-d', '--db', type=str ,help='mongob:// url with port', required=True)
-parser.add_argument('-a', '--api', type=str, help='Card API address Ex: http://dev.tawa.wtf:8000', required=True)
-parser.add_argument('-t', '--token', type=str, help='Discord bot token that will be used', required=True)
-parser.add_argument('-k', '--key', type=str, help='Card API key', required=True)
-args = parser.parse_args()
 
-# MongoDB Client
-MYCLIENT = pymongo.MongoClient(args.db)
-MYDB = MYCLIENT['MarcieProd']
-
-# Marcie API Args
-API_KEY = args.key
-API = args.api
-API_COMPLETE = f"{API}?api_key={API_KEY}"
-
-# Discord Bot Args
-DISCORD_TOKEN = args.token
-
-# Marcie Globals
-FIRSTRUN = True
-
-# Enable logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+# Each argument can also be supplied through an environment variable, which keeps secrets out of `ps` output
+def env_argument(parser, short, long, env, help):
+    parser.add_argument(short, long, type=str, default=os.environ.get(env), required=env not in os.environ,
+                        help=f"{help} (env: {env})")
 
 
-# Read in prefix from mongodb
+# Read in prefix from the cache that is loaded from mongodb
 async def get_pre(bot, message):
-    mycol = MYDB['settings']
-    dbq = mycol.find_one({'guildid': message.guild.id})
-    prefix = dbq['prefix']
+    if message.guild is None:
+        prefix = DEFAULT_PREFIX
+    else:
+        prefix = bot.prefixes.get(message.guild.id, DEFAULT_PREFIX)
 
-    return prefix
-
-description = '''Marcie FFTCG Bot
-'''
-
-bot = commands.Bot(command_prefix=get_pre, description=description)
-bot.add_cog(FFTCG(bot, API_COMPLETE))
-bot.add_cog(Management(bot, args.db))
+    return commands.when_mentioned_or(prefix)(bot, message)
 
 
-# This function handles when the bot is removed from a guild under normal operation
-@bot.event
-async def on_guild_remove(ctx):
-    mycol = MYDB['settings']
-    mycol.delete_one({'guildid': ctx.id})
-    logging.info(f"Guild: {str(ctx.name)} has removed Marcie")
+class Marcie(commands.Bot):
+    def __init__(self, db_url, api):
+        intents = discord.Intents.default()
+        intents.message_content = True
 
+        super().__init__(command_prefix=get_pre, description='Marcie FFTCG Bot', intents=intents)
 
-# This function handles when we try to trigger a command with our prefix that doesn't exist
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound):
-        logging.info(str(error))
+        self.db_url = db_url
+        self.api = api
+        self.mongo = None
+        self.settings = None
+        self.prefixes = {}
+        self.firstrun = True
 
+    async def setup_hook(self):
+        self.mongo = AsyncMongoClient(self.db_url)
+        self.settings = self.mongo['MarcieProd']['settings']
 
-# This function handles when the bot is added to a guild
-@bot.event
-async def on_guild_join(ctx):
-    mycol = MYDB['settings']
-    mycol.find_one_and_update({'guildid': ctx.id},
-                              {'$set': {'guildid': ctx.id, 'prefix': '?', 'name': ctx.name}},
-                              upsert=True)
-    logging.info(f"Guild: {ctx.name} has added Marcie")
+        self.prefixes = {doc['guildid']: doc.get('prefix', DEFAULT_PREFIX) async for doc in self.settings.find()}
 
+        await self.add_cog(FFTCG(self, self.api))
+        await self.add_cog(Management(self))
 
-@bot.event
-async def on_ready():
+    async def close(self):
+        await super().close()
+        if self.mongo:
+            await self.mongo.close()
 
-    # on_ready gets can run more than just when the bot is started
-    # so we don't need to do all the checks everytime
-    global FIRSTRUN
-    
-    if FIRSTRUN is True:
+    async def addGuild(self, guild):
+        await self.settings.find_one_and_update({'guildid': guild.id},
+                                                {'$set': {'guildid': guild.id, 'prefix': DEFAULT_PREFIX,
+                                                          'name': guild.name}},
+                                                upsert=True)
+        self.prefixes[guild.id] = DEFAULT_PREFIX
+
+    async def removeGuild(self, guildid):
+        await self.settings.delete_one({'guildid': guildid})
+        self.prefixes.pop(guildid, None)
+
+    async def setGuildPrefix(self, guild, prefix):
+        await self.settings.find_one_and_update({'guildid': guild.id},
+                                                {'$set': {'prefix': prefix, 'name': guild.name}},
+                                                upsert=True)
+        self.prefixes[guild.id] = prefix
+
+    # This function handles when the bot is removed from a guild under normal operation
+    async def on_guild_remove(self, guild):
+        await self.removeGuild(guild.id)
+        logging.info(f"Guild: {guild.name} has removed Marcie")
+
+    # This function handles when the bot is added to a guild
+    async def on_guild_join(self, guild):
+        await self.addGuild(guild)
+        logging.info(f"Guild: {guild.name} has added Marcie")
+
+    async def on_command_error(self, ctx, error):
+        # Triggering a command with our prefix that doesn't exist
+        if isinstance(error, commands.CommandNotFound):
+            logging.info(str(error))
+
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.channel.send(embed=discord.Embed(
+                description='Command is on cooldown for ' + ctx.author.display_name,
+                color=EMBEDCOLOR))
+
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.channel.send(embed=MarcieEmbed.toEmbed('You are not the guild owner or administrator.'))
+
+        elif isinstance(error, commands.NotOwner):
+            await ctx.channel.send(embed=MarcieEmbed.toEmbed('Invalid User', 'Only the bot owner can use this command'))
+
+        elif isinstance(error, commands.NoPrivateMessage):
+            await ctx.channel.send(embed=MarcieEmbed.toEmbed('This command can only be used in a server'))
+
+        elif isinstance(error, commands.UserInputError):
+            await ctx.channel.send(f"```Usage: {ctx.clean_prefix}{ctx.command.qualified_name} {ctx.command.signature}```")
+
+        else:
+            logging.error(f"Error in command {ctx.command}: {ctx.message.content}",
+                          exc_info=(type(error), error, error.__traceback__))
+
+    async def on_ready(self):
+
+        # on_ready gets can run more than just when the bot is started
+        # so we don't need to do all the checks everytime
+        if not self.firstrun:
+            logging.info('Re-running on_ready, but not first run so doing nothing.')
+            return
+
         logging.info(f"Logged in as")
-        logging.info(f"{bot.user.name}")
-        logging.info(f"{bot.user.id}")
-        logging.info(f"Startup Time: {str(datetime.datetime.utcnow())}")
-        logging.info(f"Guilds Added: {str(len(bot.guilds))}")
+        logging.info(f"{self.user.name}")
+        logging.info(f"{self.user.id}")
+        logging.info(f"Startup Time: {discord.utils.utcnow()}")
+        logging.info(f"Guilds Added: {len(self.guilds)}")
         logging.info(f"------")
 
-        mycol = MYDB['settings']
-        dbq = mycol.find()
+        dbguilds = {doc['guildid']: doc.get('name') async for doc in self.settings.find()}
+        botguilds = {guild.id: guild for guild in self.guilds}
 
-        dbguilds = [doc['guildid'] for doc in dbq]
-        botguilds = [guild.id for guild in bot.guilds]
+        # Guilds in the db that the bot is no longer in were removed while the bot was offline
+        for guildid in dbguilds.keys() - botguilds.keys():
+            logging.info(f"Guild {dbguilds[guildid]} ({guildid}) was removed while the bot was offline.  Removing from db.")
+            await self.removeGuild(guildid)
+
+        # Guilds the bot is in that are missing from the db were added while the bot was offline
+        for guildid in botguilds.keys() - dbguilds.keys():
+            guild2add = botguilds[guildid]
+            logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to db.")
+            await self.addGuild(guild2add)
+
+        self.firstrun = False
 
 
-        # If when we start the bot there are more guilds in the db then the bot see's as joined
-        # we remove those guilds from the db
-        if len(dbguilds) > len(botguilds):
-            for guildid in dbguilds:
-                if guildid not in botguilds:
-                    dbq = mycol.find_one({"guildid": guildid})
-                    logging.info(f"Guild {dbq['name']} ({guildid}) was removed while the bot was offline.  Removing from db.")
-                    mycol.delete_one({'guildid': guildid})
+def main():
+    # Create argparse parser
+    parser = argparse.ArgumentParser(description='Run a Marcie bot')
+    env_argument(parser, '-d', '--db', 'MARCIE_DB', 'mongodb:// url with port')
+    env_argument(parser, '-a', '--api', 'MARCIE_API', 'Card API address Ex: http://dev.tawa.wtf:8000/api/')
+    env_argument(parser, '-t', '--token', 'DISCORD_BOT_TOKEN', 'Discord bot token that will be used')
+    env_argument(parser, '-k', '--key', 'MARCIE_API_KEY', 'Card API key')
+    args = parser.parse_args()
 
-        # Else if the bot see's more guilds than what is present in settings.json we add the missing guilds with default
-        # settings
-        elif len(dbguilds) < len(botguilds):
-            for guildid in botguilds:
-                if guildid not in dbguilds:
-                    guild2add = bot.get_guild(guildid)
-                    logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to db.")
-                    mycol.find_one_and_update({'guildid': guild2add.id},
-                                              {'$set': {'guildid': guild2add.id, 'prefix': '?', 'name': guild2add.name}},
-                                              upsert=True)
-        FIRSTRUN = False
-    else:
-        logging.info('Re-running on_ready, but not first run so doing nothing.')
+    # Enable logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
-bot.run(DISCORD_TOKEN)
+    bot = Marcie(args.db, f"{args.api}?api_key={args.key}")
+    bot.run(args.token, log_handler=None)
+
+
+if __name__ == '__main__':
+    main()

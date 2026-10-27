@@ -1,3 +1,5 @@
 EMBEDCOLOR = 0xd93fb6
 MAX_QUERY = 35
-CODE_VALIDATOR = r'^[bB]-[0-9]{3}|^[0-9]+\-[0-9]{3}[a-zA-Z]$|^[0-9]+\-[0-9]{3}$|^[Pp][Rr]\-\d{3}$|^[0-9]+\-[0-9]{3}[a-zA-Z]\/?'
+# Card codes: 1-001H, 15-001R/9-002H, B-001, C-001, PR-001, Re-001H/12-002H
+CODE_VALIDATOR = r'^([0-9]+|[bB]|[cC]|[pP][rR]|[rR][eE])-[0-9]{3}'
+DEFAULT_PREFIX = '?'
