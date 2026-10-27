@@ -1,11 +1,9 @@
 import discord
-from constants import EMBEDCOLOR
+from constants import EMBEDCOLOR, DISCORD_CACHE_BYPASS
 from fftcg_parser import prettyCode, prettyCard
 
 
 class MarcieEmbed:
-
-    DISCORD_CACHE_BYPASS = "?1"
 
     @staticmethod
     def NOMATCH():
@@ -52,7 +50,7 @@ class MarcieEmbed:
         else:
             url = None
 
-        return url + MarcieEmbed.DISCORD_CACHE_BYPASS if url else None
+        return url + DISCORD_CACHE_BYPASS if url else None
 
     @staticmethod
     def cardToNameEmbed(card, uuid, lang):

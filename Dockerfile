@@ -10,7 +10,7 @@ COPY *.py ./
 RUN useradd --system marcie && mkdir /data && chown marcie /data
 USER marcie
 
-# Custom guild prefixes are saved to /data/prefixes.json, mount a volume there to keep them
+# Guild prefixes are saved to /data/marcie.db, mount a volume there to keep them
 ENV MARCIE_DATA_DIR=/data
 VOLUME /data
 

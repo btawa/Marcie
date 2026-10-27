@@ -8,6 +8,9 @@ Marcie is a discord bot designed to provide discord users access to query for FF
 ### top.gg Listing  
 - https://top.gg/bot/570428406957735946  
   
+### Privacy  
+- See [PRIVACY.md](PRIVACY.md) for what Marcie stores and logs.  
+  
 ## Dependencies  
 - Python 3.10+ (the Docker image uses 3.12)
 - Configured application in the [Discord developer portal](https://discord.com/developers/applications) with the **Message Content** privileged intent enabled  
@@ -17,6 +20,7 @@ Marcie is a discord bot designed to provide discord users access to query for FF
 ### Python Libraries
 See `requirements.txt`:
 - discord.py 2.x
+- DiscordUtils (reaction paging for `paginate`)
 
 ## Configuration
 Each setting can be passed as a command line flag or an environment variable. Environment variables are preferred for the token and API key so they don't show up in process listings.
@@ -26,14 +30,15 @@ Each setting can be passed as a command line flag or an environment variable. En
 | `--token` | `DISCORD_BOT_TOKEN` | Discord bot token |
 | `--key` | `MARCIE_API_KEY` | MarcieAPI key |
 | `--api` | `MARCIE_API` | MarcieAPI address, e.g. `http://dev.tawa.wtf:8000/api/` |
-| `--data-dir` (or `--db-path`) | `MARCIE_DATA_DIR` | Folder for `prefixes.json`, defaults to the current directory |
+| `--data-dir` (or `--db-path`) | `MARCIE_DATA_DIR` | Folder for `marcie.db`, defaults to the current directory |
+| `--log-level` | `MARCIE_LOG_LEVEL` | `DEBUG`, `INFO` (default), `WARNING` or `ERROR` |
 
-Marcie doesn't need a database. Custom prefixes set with `?prefix` are saved to `prefixes.json` in the data folder. If that folder holds a `marcie.db` from the older SQLite version, its custom prefixes are imported the first time Marcie starts.
+Marcie keeps each server's prefix in `marcie.db`, a SQLite file in the data folder that is created on first start. No database server is needed.
 
 ## Installation
 ### Normal
 
-    git clone https://github.com/japnix/Marcie.git
+    git clone https://github.com/btawa/Marcie.git
     cd Marcie
     python3 -m venv .venv
     .venv/bin/pip install -r requirements.txt
@@ -53,11 +58,15 @@ Marcie doesn't need a database. Custom prefixes set with `?prefix` are saved to 
 ### Requirements  
 Ensure that your bot has the ability to `Read Text Channels & See Voice Channels` and `Send Messages` in the server you have joined it to.
 
-`Manage Messages` is optional. With it, Marcie deletes the number you type when choosing a card from a selection list.  
+Marcie has some functionality which utilizes `Manage Messages` specifically paginate, which allows for using emoji reacts to page through card embeds.  Additionally, with selection logic Marcie will attempt to delete the response message which contains the selection.  
 
 Commands can be triggered with the server's prefix or by mentioning Marcie, e.g. `@Marcie name auron`.
   
 ## Commands  
+Every command works as a slash command (`/name auron`) or with the server's prefix (`?name auron`). Slash commands autocomplete card names, card codes and set numbers, and `/adv` takes each filter as its own field instead of `-n`/`-c` style flags.
+
+Marcie registers its slash commands with Discord when it starts, but only when they have changed since the last start. It remembers this in `commands.sha256` in the data folder; delete that file to force a re-register. If slash commands don't show up in a server that added Marcie a long time ago, re-invite the bot with the `applications.commands` scope.
+
 
     FFTCG: 
         adv This command allows card querying by providing arguments to filter... 
@@ -155,7 +164,7 @@ This command allows card querying by providing arguments to filter off of.
     -y, --tiny - Print cards in tiny output
     -i, --image - Return card as image format
     -l, --lang - Language of returned image/thumbnail (en, jp)
-    -a, --paginate - Returned cards will provide pagination buttons
+    -a, --paginate - Returned cards will provide pagination embed
 
     Example:
         ?adv --name yuna --type backup --cost 2
@@ -169,12 +178,14 @@ This command allows card querying by providing arguments to filter off of.
 ### ?paginate
 Returns image of card(s) as a paginated embed. Takes name.  Accepts regex.
 
-This function only takes one argument, a name. It will return the image of the card as an embed. If there are multiple matches on your query, the bot will provide buttons that can be used to page through each card. Only the user who created the query will be able to use these buttons.
+This function only takes one argument, a name. It will return the image of the card as an embed. If there are multiple matches on your query, the bot will provide react emojis that can be used to page through each card. Only the users who create the query will be able to activate these react emojis.
 
     Example:
         ?paginate leviathan
 
 #### Known Caveats
+- This command requires the marcie to have `Manage Messages` permission.  Without this permission the react emojis will not operate as expected.  If you have any questions please reach out in the support discord.
+
 - This command is using regex for matching.  As a result special regex characters like '(' and ')' may not matches you may expect.  In these cases it is necessary to either escape the regex character '\(' or search a different substring of the overall card name.
 
         Example:
@@ -185,3 +196,6 @@ This function only takes one argument, a name. It will return the image of the c
 ### ?support
 Marcie will ping you a invite to the support discord
 
+
+## Disclaimer
+Final Fantasy and the Final Fantasy Trading Card Game are trademarks of Square Enix. Card names, text, and images are © Square Enix. Marcie is an unofficial fan project and is not affiliated with, endorsed by, or sponsored by Square Enix.

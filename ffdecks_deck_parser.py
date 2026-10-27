@@ -2,6 +2,8 @@ import re
 import logging
 import aiohttp
 
+log = logging.getLogger(__name__)
+
 
 class ffdecksParse:
     def __init__(self, url):
@@ -87,7 +89,7 @@ class ffdecksParse:
             return self
 
         except (aiohttp.ClientError, ValueError, KeyError, TypeError, IndexError) as e:
-            logging.info(f"ffdecks lookup failed for deck {self.deck_id}: {e!r}")
+            log.info(f"ffdecks lookup failed for deck {self.deck_id}: {e!r}")
             self.deck = {}
             return self
 

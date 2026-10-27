@@ -1,6 +1,12 @@
 import re
 import random
 import logging
+from constants import (DISCORD_MESSAGE_LIMIT, DISCORD_CHOICE_TEXT_LIMIT, PACK_COMMONS, PACK_RARES,
+                       PACK_LEGEND_CHANCE)
+
+CODE_BLOCK = '```'
+
+log = logging.getLogger(__name__)
 
 # Helpful jq
 #
@@ -12,6 +18,19 @@ import logging
 # Element   Category_1  Name        Name_EN     Name_DE     Name_ES     Name_FR     Name_IT     Set     Name_NA
 # Rarity        Category_2  Type        Type_EN     Type_DE     Type_ES     Type_FR     Type_IT     Text_NA
 # Cost      Multicard   Job     Job_EN      Job_DE      Job_ES      Job_FR      Job_IT      Job_NA
+
+
+# Sorts cards by set number then card number (5-075L before 13-117R), with lettered sets (B, C, PR, Re) last
+
+def codeSortKey(card):
+    match = re.match(r'([^-]+)-(\d+)', card['Code'])
+    if not match:
+        return (2, card['Code'], 0)
+
+    prefix, number = match.groups()
+    if prefix.isdigit():
+        return (0, int(prefix), int(number))
+    return (1, prefix.upper(), int(number))
 
 
 # This function reads in a request, and a cards dictionary.
@@ -152,6 +171,12 @@ def prettyCard(card):
     return finished_string
 
 
+# Discord caps the length of autocomplete choice names and values
+
+def truncate(text, limit=DISCORD_CHOICE_TEXT_LIMIT):
+    return text if len(text) <= limit else text[:limit - 1] + '\u2026'
+
+
 # Builds the compact one-card-per-line output used by ?tiny and ?adv --tiny
 
 def tinyOutput(cards, max_query):
@@ -163,10 +188,10 @@ def tinyOutput(cards, max_query):
 
     output = '\n'.join(prettyCode(card) for card in cards)
 
-    if len(output) >= 1990:
-        return '```Too many characters for discord, please be more specific```'
+    if len(output) + 2 * len(CODE_BLOCK) > DISCORD_MESSAGE_LIMIT:
+        return f'{CODE_BLOCK}Too many characters for discord, please be more specific{CODE_BLOCK}'
 
-    return f'```{output}```'
+    return f'{CODE_BLOCK}{output}{CODE_BLOCK}'
 
 
 # Builds a 12 card pack from the numbered set (1 = Opus I, 15 = Crystal Dominion, ...).  Cards are matched
@@ -198,30 +223,14 @@ def getPack(opusnumber, cards):
             elif re.search(r'R', card['Rarity']):
                 rares.append(card)
 
-        random.shuffle(heroics)
-        random.shuffle(commons)
-        random.shuffle(rares)
-        random.shuffle(legendaries)
-        random.shuffle(mycards)
-
-        for x in range(0, 12):
-            if x <= 6:
-                randomindex = random.randint(0, len(commons) - 1)
-                pack.append(commons[randomindex])
-                commons.pop(randomindex)
-            elif 7 <= x <= 9:
-                randomindex = random.randint(0, len(rares) - 1)
-                pack.append(rares[randomindex])
-                rares.pop(randomindex)
-            elif x == 10:
-                pack.append(mycards[random.randint(0, len(mycards) - 1)])
-            elif x == 11:
-                if random.randint(1, 10) <= 2:
-                    pack.append(legendaries[random.randint(0, len(legendaries) - 1)])
-                else:
-                    pack.append(heroics[random.randint(0, len(heroics) - 1)])
+        for _ in range(PACK_COMMONS):
+            pack.append(commons.pop(random.randrange(len(commons))))
+        for _ in range(PACK_RARES):
+            pack.append(rares.pop(random.randrange(len(rares))))
+        pack.append(random.choice(mycards))
+        pack.append(random.choice(legendaries if random.random() < PACK_LEGEND_CHANCE else heroics))
         return pack
 
     except (ValueError, IndexError) as e:
-        logging.info(e)
+        log.info(f"Unable to build a pack for set {opusnumber}: {e!r}")
         return None
