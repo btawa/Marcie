@@ -1,5 +1,4 @@
 from discord.ext import commands
-from pymongo import AsyncMongoClient
 import discord
 import logging
 import argparse
@@ -7,6 +6,7 @@ import os
 from Fftcg import FFTCG
 from Management import Management
 from MarcieEmbed import MarcieEmbed
+from prefix_store import PrefixStore
 from constants import DEFAULT_PREFIX, EMBEDCOLOR
 
 __author__ = "Japnix"
@@ -18,69 +18,41 @@ def env_argument(parser, short, long, env, help):
                         help=f"{help} (env: {env})")
 
 
-# Read in prefix from the cache that is loaded from mongodb
+# Read in prefix from the prefix store, falling back to the default for DMs and guilds without a custom prefix
 async def get_pre(bot, message):
     if message.guild is None:
         prefix = DEFAULT_PREFIX
     else:
-        prefix = bot.prefixes.get(message.guild.id, DEFAULT_PREFIX)
+        prefix = bot.prefixes.get(message.guild.id)
 
     return commands.when_mentioned_or(prefix)(bot, message)
 
 
 class Marcie(commands.Bot):
-    def __init__(self, db_url, api):
+    def __init__(self, prefixes, api):
         intents = discord.Intents.default()
         intents.message_content = True
 
         super().__init__(command_prefix=get_pre, description='Marcie FFTCG Bot', intents=intents)
 
-        self.db_url = db_url
+        self.prefixes = prefixes
         self.api = api
-        self.mongo = None
-        self.settings = None
-        self.prefixes = {}
         self.firstrun = True
 
     async def setup_hook(self):
-        self.mongo = AsyncMongoClient(self.db_url)
-        self.settings = self.mongo['MarcieProd']['settings']
-
-        self.prefixes = {doc['guildid']: doc.get('prefix', DEFAULT_PREFIX) async for doc in self.settings.find()}
-
         await self.add_cog(FFTCG(self, self.api))
         await self.add_cog(Management(self))
 
-    async def close(self):
-        await super().close()
-        if self.mongo:
-            await self.mongo.close()
-
-    async def addGuild(self, guild):
-        await self.settings.find_one_and_update({'guildid': guild.id},
-                                                {'$set': {'guildid': guild.id, 'prefix': DEFAULT_PREFIX,
-                                                          'name': guild.name}},
-                                                upsert=True)
-        self.prefixes[guild.id] = DEFAULT_PREFIX
-
-    async def removeGuild(self, guildid):
-        await self.settings.delete_one({'guildid': guildid})
-        self.prefixes.pop(guildid, None)
-
     async def setGuildPrefix(self, guild, prefix):
-        await self.settings.find_one_and_update({'guildid': guild.id},
-                                                {'$set': {'prefix': prefix, 'name': guild.name}},
-                                                upsert=True)
-        self.prefixes[guild.id] = prefix
+        self.prefixes.set(guild.id, prefix)
 
     # This function handles when the bot is removed from a guild under normal operation
     async def on_guild_remove(self, guild):
-        await self.removeGuild(guild.id)
+        self.prefixes.remove(guild.id)
         logging.info(f"Guild: {guild.name} has removed Marcie")
 
     # This function handles when the bot is added to a guild
     async def on_guild_join(self, guild):
-        await self.addGuild(guild)
         logging.info(f"Guild: {guild.name} has added Marcie")
 
     async def on_command_error(self, ctx, error):
@@ -124,36 +96,40 @@ class Marcie(commands.Bot):
         logging.info(f"Guilds Added: {len(self.guilds)}")
         logging.info(f"------")
 
-        dbguilds = {doc['guildid']: doc.get('name') async for doc in self.settings.find()}
-        botguilds = {guild.id: guild for guild in self.guilds}
-
-        # Guilds in the db that the bot is no longer in were removed while the bot was offline
-        for guildid in dbguilds.keys() - botguilds.keys():
-            logging.info(f"Guild {dbguilds[guildid]} ({guildid}) was removed while the bot was offline.  Removing from db.")
-            await self.removeGuild(guildid)
-
-        # Guilds the bot is in that are missing from the db were added while the bot was offline
-        for guildid in botguilds.keys() - dbguilds.keys():
-            guild2add = botguilds[guildid]
-            logging.info(f"Guild {guild2add.name} ({guild2add.id}) was added while the bot was offline.  Adding to db.")
-            await self.addGuild(guild2add)
+        # Drop custom prefixes for guilds that removed Marcie while the bot was offline
+        botguilds = {guild.id for guild in self.guilds}
+        for guildid in set(self.prefixes.prefixes) - botguilds:
+            logging.info(f"Guild {guildid} was removed while the bot was offline.  Removing its prefix.")
+            self.prefixes.remove(guildid)
 
         self.firstrun = False
+
+
+def load_prefixes(data_dir):
+    prefixes = PrefixStore(os.path.join(data_dir, 'prefixes.json'))
+
+    # Carry over custom prefixes from the SQLite database used on the ai_test branch
+    legacy_db = os.path.join(data_dir, 'marcie.db')
+    if not os.path.exists(prefixes.path) and os.path.exists(legacy_db):
+        prefixes.importSqlite(legacy_db)
+
+    return prefixes.load()
 
 
 def main():
     # Create argparse parser
     parser = argparse.ArgumentParser(description='Run a Marcie bot')
-    env_argument(parser, '-d', '--db', 'MARCIE_DB', 'mongodb:// url with port')
     env_argument(parser, '-a', '--api', 'MARCIE_API', 'Card API address Ex: http://dev.tawa.wtf:8000/api/')
     env_argument(parser, '-t', '--token', 'DISCORD_BOT_TOKEN', 'Discord bot token that will be used')
     env_argument(parser, '-k', '--key', 'MARCIE_API_KEY', 'Card API key')
+    parser.add_argument('--data-dir', '--db-path', dest='data_dir', default=os.environ.get('MARCIE_DATA_DIR', '.'),
+                        help='Directory for prefixes.json (env: MARCIE_DATA_DIR, default: current directory)')
     args = parser.parse_args()
 
     # Enable logging
     logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
-    bot = Marcie(args.db, f"{args.api}?api_key={args.key}")
+    bot = Marcie(load_prefixes(args.data_dir), f"{args.api}?api_key={args.key}")
     bot.run(args.token, log_handler=None)
 
 

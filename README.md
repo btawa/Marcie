@@ -13,12 +13,10 @@ Marcie is a discord bot designed to provide discord users access to query for FF
 - Configured application in the [Discord developer portal](https://discord.com/developers/applications) with the **Message Content** privileged intent enabled  
 - MarcieAPI  
   + If you need access to this please reach out to Japnix in the support discord  
-- MongoDB  
 
 ### Python Libraries
 See `requirements.txt`:
 - discord.py 2.x
-- pymongo 4.13+ (uses the native async client)
 
 ## Configuration
 Each setting can be passed as a command line flag or an environment variable. Environment variables are preferred for the token and API key so they don't show up in process listings.
@@ -28,7 +26,9 @@ Each setting can be passed as a command line flag or an environment variable. En
 | `--token` | `DISCORD_BOT_TOKEN` | Discord bot token |
 | `--key` | `MARCIE_API_KEY` | MarcieAPI key |
 | `--api` | `MARCIE_API` | MarcieAPI address, e.g. `http://dev.tawa.wtf:8000/api/` |
-| `--db` | `MARCIE_DB` | MongoDB url, e.g. `mongodb://db:27017` |
+| `--data-dir` (or `--db-path`) | `MARCIE_DATA_DIR` | Folder for `prefixes.json`, defaults to the current directory |
+
+Marcie doesn't need a database. Custom prefixes set with `?prefix` are saved to `prefixes.json` in the data folder. If that folder holds a `marcie.db` from the older SQLite version, its custom prefixes are imported the first time Marcie starts.
 
 ## Installation
 ### Normal
@@ -38,8 +38,8 @@ Each setting can be passed as a command line flag or an environment variable. En
     python3 -m venv .venv
     .venv/bin/pip install -r requirements.txt
 
-    export DISCORD_BOT_TOKEN=... MARCIE_API_KEY=... MARCIE_API=http://dev.tawa.wtf:8000/api/ MARCIE_DB=mongodb://db:27017
-    .venv/bin/python marcie.py
+    export DISCORD_BOT_TOKEN=... MARCIE_API_KEY=... MARCIE_API=http://dev.tawa.wtf:8000/api/
+    .venv/bin/python marcie.py --data-dir ./data
 
 ### Docker
 
@@ -47,7 +47,7 @@ Each setting can be passed as a command line flag or an environment variable. En
     docker run -d --name marcie \
         -e DISCORD_BOT_TOKEN -e MARCIE_API_KEY \
         -e MARCIE_API=http://dev.tawa.wtf:8000/api/ \
-        -e MARCIE_DB=mongodb://db:27017 \
+        -v marcie-data:/data \
         marcie
 
 ### Requirements  
