@@ -36,7 +36,6 @@ Discord lets Marcie see messages in channels it has access to. Marcie only check
 
 - **Discord** delivers all messages and commands. Discord's own [Privacy Policy](https://discord.com/privacy) applies to your use of Discord.
 - **Card data** comes from our own card API. Card images are hosted on Google Cloud Storage and loaded by Discord, not by your device directly.
-- **ffdecks.com**: when you use the `ffdeck` command, Marcie sends the deck link you provided to ffdecks.com to fetch the decklist. No information about you is sent.
 
 We do not sell, rent, or share any information with anyone else, and Marcie has no advertising or analytics.
 

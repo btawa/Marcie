@@ -10,7 +10,7 @@ COOLDOWN_SECONDS = 10
 
 # Seconds to wait for a user to type a card number when several cards match
 COMMAND_TIMEOUT = 10
-# Seconds before a request to MarcieAPI or ffdecks gives up
+# Seconds before a request to MarcieAPI gives up
 API_TIMEOUT = 30
 # Length of the request ID logged with each command and shown in embed footers
 REQUEST_ID_LENGTH = 10

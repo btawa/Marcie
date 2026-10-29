@@ -14,7 +14,6 @@ from fftcg_parser import grab_card, grab_cards, grab_cards_beta, prettyCode, tin
 from constants import (MAX_QUERY, CODE_VALIDATOR, COOLDOWN_USES, COOLDOWN_SECONDS, COMMAND_TIMEOUT, API_TIMEOUT,
                        REQUEST_ID_LENGTH, DISCORD_AUTOCOMPLETE_CHOICES)
 from MarcieEmbed import MarcieEmbed
-from ffdecks_deck_parser import ffdecksParse
 
 
 log = logging.getLogger(__name__)
@@ -498,23 +497,3 @@ class FFTCG(commands.Cog):
         else:
             embed = MarcieEmbed.toEmbed("Refresh Failed", "Unable to reach MarcieAPI, keeping the current card list")
         await ctx.send(embed=embed, ephemeral=True)
-
-    @commands.cooldown(COOLDOWN_USES, COOLDOWN_SECONDS, type=commands.BucketType.user)
-    @commands.hybrid_command(description='Show an ffdecks.com deck as a text decklist')
-    @app_commands.describe(url='ffdecks.com deck link, e.g. https://ffdecks.com/deck/123456')
-    async def ffdeck(self, ctx, url):
-        """ This function returns an ascii decklist of an ffdecks deck url (https://ffdecks.com/deck/<deckid>)
-        """
-
-        self.newRequestId(ctx)
-        parser = ffdecksParse(url)
-
-        if parser.deck_id:
-            await ctx.defer()
-            await parser.load(self.session)
-
-        if parser.ascii_decklist:
-            await ctx.send('```' + parser.ascii_decklist + '```')
-        else:
-            embed = MarcieEmbed.toEmbed("Bad Request", "This request didn't return a decklist")
-            await ctx.send(embed=embed)
